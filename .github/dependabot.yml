@@ -1,0 +1,18 @@
+# Dependabot: abre PRs automáticos para atualizar dependências.
+# Por enquanto só as GitHub Actions do CI.
+# `pip`, `npm` e `docker` serão acrescentados no Prompt 2, quando os arquivos de
+# dependências existirem (o Dependabot dá erro em pasta sem manifesto).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      github-actions:
+        patterns:
+          - "*"

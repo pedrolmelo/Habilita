@@ -1,0 +1,24 @@
+# pre-commit: roda verificações automáticas antes de cada commit.
+# Ativar no seu clone: `pre-commit install`. Rodar tudo: `pre-commit run --all-files`.
+# As versões (rev) são fixadas por SHA (`pre-commit autoupdate --freeze`) para
+# evitar que uma tag alterada traga código diferente do revisado.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e  # frozen: v8.30.1
+    hooks:
+      - id: gitleaks
