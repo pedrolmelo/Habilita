@@ -1,0 +1,17 @@
+# Tudo que não deve entrar no contexto de build da imagem.
+.venv/
+**/__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+.env
+.env.*
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.md
