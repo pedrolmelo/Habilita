@@ -50,8 +50,10 @@ Se uma ADR **aprovada** no `habilita-docs` contradisser este arquivo, a ADR venc
 - Subir ambiente local completo: `docker compose up --build` (ou em segundo plano: `docker compose up -d --build`)
 - Parar ambiente local: `docker compose down` (e `docker compose down -v` para limpar volumes)
 - Verificações de higiene e segredos: `pre-commit run --all-files`
-- Verificações da API: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy`, `uv run lint-imports` (ou `docker compose exec api sh -c "ruff check . && ruff format --check . && mypy && lint-imports"`)
+- Verificações da API: `uv run ruff check .`, `uv run ruff format --check .`, `uv run mypy`, `uv run lint-imports` (ou `docker compose exec api sh -c "ruff check . && ruff format --check . && mypy && lint-imports"`)
 - Verificações do frontend: `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run build` (ou `docker compose exec web sh -c "npm run lint && npm run typecheck && npm run format:check && npm run build"`)
+- Verificação dos Dockerfiles: `docker run --rm -v "$PWD:/repo" -w /repo hadolint/hadolint:v2.15.1-alpine hadolint apps/api/Dockerfile apps/web/Dockerfile infra/emulators/Dockerfile`
+- Smoke test local do Compose: `docker compose up -d --build --wait && curl -sS -f http://127.0.0.1:8000/healthz && curl -sS -f http://127.0.0.1:5173/api/healthz && docker compose down -v`
 
 ## Convenções de Git e PR
 
@@ -105,7 +107,7 @@ Se uma ADR **aprovada** no `habilita-docs` contradisser este arquivo, a ADR venc
 
 1. Leia o código e os arquivos relacionados antes de editar.
 2. Faça mudanças pequenas e focadas em uma história.
-3. Rode as verificações (`pre-commit run --all-files` e, depois do Prompt 3, lint/testes) antes de concluir.
+3. Rode as verificações locais (`pre-commit run --all-files`, lint da API e Web, Hadolint e build) antes de concluir.
 4. Explique o que fez em português simples.
 5. Pergunte quando houver ambiguidade que não dá para desfazer.
 6. Não adicione dependência sem justificar no PR.

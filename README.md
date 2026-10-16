@@ -90,6 +90,21 @@ Todas as portas são publicadas exclusivamente em `127.0.0.1` (loopback) para se
   docker compose up --build
   ```
 
+## Integração Contínua (CI)
+
+O repositório possui pipeline automatizado no GitHub Actions executado a cada Pull Request e push na branch `main`:
+
+| Job | O que verifica | Como rodar localmente |
+|---|---|---|
+| `segredos` | Varrer todo o histórico Git com Gitleaks à procura de credenciais e segredos vazados | `pre-commit run gitleaks --all-files` |
+| `higiene` | Formatação de arquivos, quebras de linha LF, sintaxe YAML/JSON e arquivos grandes | `pre-commit run --all-files` |
+| `api-qualidade` | Linting (`ruff check .`), formatação (`ruff format --check .`), tipagem estrita (`mypy`) e isolamento arquitetural (`lint-imports`) na API Python | `cd apps/api && uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run lint-imports`<br>*(ou via contêiner: `docker compose exec api sh -c "ruff check . && ruff format --check . && mypy && lint-imports"`)* |
+| `web-qualidade` | Linting (`eslint .`), tipagem estrita (`tsc`) e formatação (`prettier --check .`) no frontend React | `cd apps/web && npm run lint && npm run typecheck && npm run format:check`<br>*(ou via contêiner: `docker compose exec web sh -c "npm run lint && npm run typecheck && npm run format:check"`)* |
+| `web-build` | Compilação estática do frontend de produção via Vite (`npm run build`), bloqueada se o lint falhar | `cd apps/web && npm run build`<br>*(ou via contêiner: `docker compose exec web npm run build`)* |
+| `dockerfiles` | Conformidade, boas práticas e segurança dos Dockerfiles com Hadolint | `docker run --rm -v "$PWD:/repo" -w /repo hadolint/hadolint:v2.15.1-alpine hadolint apps/api/Dockerfile apps/web/Dockerfile infra/emulators/Dockerfile` |
+| `compose-smoke` | Subida real do ambiente do zero sem `.env` (`docker compose up -d --build --wait`), validação dos endpoints `/healthz`, proxy Vite e regra deny-all do Firestore | `docker compose config`<br>`docker compose up -d --build --wait`<br>`curl -sS -f http://127.0.0.1:8000/healthz`<br>`curl -sS -f http://127.0.0.1:5173/api/healthz`<br>`docker compose down -v` |
+| `ci-ok` | Check agregador estável: consolida todos os jobs e falha se qualquer um falhar, for cancelado ou pulado (único check obrigatório na proteção da `main`) | Avaliado automaticamente no GitHub Actions |
+
 ## Como contribuir
 
 Resumo (detalhes em [Como contribuir](https://osamuelleite.github.io/habilita-docs/engenharia/contribuir/)):
