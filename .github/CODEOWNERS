@@ -26,3 +26,15 @@
 /docker-compose.yml     @pedrolmelo @osamuelleite
 /AGENTS.md              @pedrolmelo @osamuelleite
 /CLAUDE.md              @pedrolmelo @osamuelleite
+
+# Emuladores do Firebase e regras (DevOps + Tech Lead)
+/firebase.json          @pedrolmelo @osamuelleite
+/firestore.rules        @pedrolmelo @osamuelleite
+/storage.rules          @pedrolmelo @osamuelleite
+/firestore.indexes.json @pedrolmelo @osamuelleite
+/.firebaserc            @pedrolmelo @osamuelleite
+
+# Imagem dos emuladores e Dockerfiles das aplicações (DevOps)
+/infra/emulators/       @pedrolmelo
+/apps/api/Dockerfile    @pedrolmelo
+/apps/web/Dockerfile    @pedrolmelo

@@ -1,7 +1,7 @@
-# Dependabot: abre PRs automáticos para atualizar dependências.
-# Por enquanto só as GitHub Actions do CI.
-# `pip`, `npm` e `docker` serão acrescentados no Prompt 2, quando os arquivos de
-# dependências existirem (o Dependabot dá erro em pasta sem manifesto).
+# Dependabot: abre PRs automáticos para atualizar dependências (toda semana).
+# Ecossistemas conferidos na documentação oficial do GitHub (supported ecosystems):
+# github-actions, uv, npm, docker e docker-compose.
+# Cada entrada aponta para uma pasta que TEM manifesto (senão o Dependabot dá erro).
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -14,5 +14,64 @@ updates:
       include: scope
     groups:
       github-actions:
+        patterns:
+          - "*"
+
+  # API Python gerenciada pelo uv (pyproject.toml + uv.lock).
+  - package-ecosystem: uv
+    directory: /apps/api
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      python-deps:
+        patterns:
+          - "*"
+
+  # Frontend (package.json + package-lock.json).
+  - package-ecosystem: npm
+    directory: /apps/web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      npm-deps:
+        patterns:
+          - "*"
+
+  # Imagens base dos Dockerfiles (tag + digest).
+  - package-ecosystem: docker
+    directories:
+      - /apps/api
+      - /apps/web
+      - /infra/emulators
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      docker-images:
+        patterns:
+          - "*"
+
+  # docker-compose.yml da raiz.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      docker-compose:
         patterns:
           - "*"
