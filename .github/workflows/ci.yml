@@ -112,3 +112,62 @@ jobs:
       - name: Verificar arquitetura com import-linter
         working-directory: apps/api
         run: uv run lint-imports
+
+  web-qualidade:
+    name: web-qualidade
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configurar Node.js (versão sincronizada com apps/web/.nvmrc)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: "apps/web/.nvmrc"
+          cache: "npm"
+          cache-dependency-path: "apps/web/package-lock.json"
+
+      - name: Instalar dependências do frontend (npm ci congelado e sem scripts)
+        working-directory: apps/web
+        run: npm ci --ignore-scripts
+
+      - name: Verificar lint com ESLint
+        working-directory: apps/web
+        run: npm run lint
+
+      - name: Verificar tipagem com TypeScript (tsc)
+        working-directory: apps/web
+        run: npm run typecheck
+
+      - name: Verificar formatação com Prettier
+        working-directory: apps/web
+        run: npm run format:check
+
+  web-build:
+    name: web-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: web-qualidade
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configurar Node.js (versão sincronizada com apps/web/.nvmrc)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: "apps/web/.nvmrc"
+          cache: "npm"
+          cache-dependency-path: "apps/web/package-lock.json"
+
+      - name: Instalar dependências do frontend (npm ci congelado e sem scripts)
+        working-directory: apps/web
+        run: npm ci --ignore-scripts
+
+      - name: Compilar frontend (Vite build)
+        working-directory: apps/web
+        run: npm run build
