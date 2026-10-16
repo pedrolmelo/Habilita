@@ -17,6 +17,11 @@ Acesse em: [http://localhost:5173](http://localhost:5173).
 - As chamadas para `/api/*` passam pelo proxy do Vite e são direcionadas internamente para `http://api:8000/*`.
 - As dependências (`node_modules`) ficam isoladas dentro da imagem e não são sobrescritas pelo volume local.
 
+> **Dica para o VS Code / editor:** Para ter autocompletar e tipagem no editor sem precisar de Node na sua máquina hospedeira, a pasta `apps/web/node_modules/` pode ser sincronizada a partir do contêiner:
+> ```bash
+> docker run --rm -v "$PWD/apps/web":/host habilita-web:dev cp -rp /app/node_modules /host/
+> ```
+
 Para rodar verificações de qualidade dentro do contêiner:
 ```bash
 docker compose exec web sh -c "npm run lint && npm run typecheck && npm run format:check && npm run build"
