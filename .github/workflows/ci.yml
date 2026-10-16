@@ -8,6 +8,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 # Menor permissão possível: o CI só precisa ler o código.
 permissions:
@@ -73,3 +74,41 @@ jobs:
           # O Gitleaks já roda no job `segredos`.
           SKIP: gitleaks
         run: pre-commit run --all-files --show-diff-on-failure
+
+  api-qualidade:
+    name: api-qualidade
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configurar uv e Python 3.12
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.1"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "apps/api/uv.lock"
+
+      - name: Sincronizar dependências da API
+        working-directory: apps/api
+        run: uv sync --frozen
+
+      - name: Verificar lint com Ruff
+        working-directory: apps/api
+        run: uv run ruff check .
+
+      - name: Verificar formatação com Ruff
+        working-directory: apps/api
+        run: uv run ruff format --check .
+
+      - name: Verificar tipagem com mypy
+        working-directory: apps/api
+        run: uv run mypy
+
+      - name: Verificar arquitetura com import-linter
+        working-directory: apps/api
+        run: uv run lint-imports
