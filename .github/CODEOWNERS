@@ -1,0 +1,28 @@
+# CODEOWNERS: define quem é dono (revisor padrão) de cada parte do repositório.
+# Atenção: a revisão pelo dono só é OBRIGATÓRIA se a regra
+# "Require review from Code Owners" estiver ativa na proteção da branch no GitHub.
+# A ÚLTIMA regra que casar com o arquivo é a que vale.
+#
+# Papéis: Tech Lead @osamuelleite | Backend @Gustavormq | Frontend @ArthurFeitosa05
+#         DevOps @pedrolmelo | QA @CauaRVeloso | PO @Lelafeta
+
+# Padrão: Tech Lead
+*                       @osamuelleite
+
+# Frontend
+/apps/web/              @ArthurFeitosa05
+
+# API
+/apps/api/              @Gustavormq @osamuelleite
+
+# Seed (dados de demonstração)
+/seed/                  @Gustavormq @pedrolmelo
+
+# Infraestrutura
+/infra/                 @pedrolmelo @osamuelleite
+
+# Automação, CI e regras para agentes de IA
+/.github/               @pedrolmelo @osamuelleite
+/docker-compose.yml     @pedrolmelo @osamuelleite
+/AGENTS.md              @pedrolmelo @osamuelleite
+/CLAUDE.md              @pedrolmelo @osamuelleite

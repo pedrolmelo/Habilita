@@ -1,0 +1,2 @@
+# Desativa issues em branco: toda issue deve usar um dos formulários.
+blank_issues_enabled: false

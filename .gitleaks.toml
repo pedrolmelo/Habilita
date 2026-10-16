@@ -1,0 +1,7 @@
+# Configuração do Gitleaks (scanner de segredos).
+# Usa todas as regras padrão do Gitleaks. Só acrescente uma allowlist se houver
+# falso positivo REAL, restrita ao arquivo e à regra específica, com comentário do motivo.
+title = "Habilita gitleaks config"
+
+[extend]
+useDefault = true

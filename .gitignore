@@ -1,0 +1,61 @@
+# =====================================================================
+# .gitignore — arquivos que o Git deve IGNORAR (nunca versionar)
+# =====================================================================
+
+# --- Python ---
+.venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+*.egg-info/
+
+# --- Node / frontend ---
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+
+# --- Variáveis de ambiente (podem conter segredos) ---
+.env
+.env.*
+!.env.example
+
+# --- Firebase / emuladores ---
+.firebase/
+firebase-debug.log*
+ui-debug.log
+firestore-debug.log
+# Dados exportados dos emuladores (firebase emulators:export)
+emulator-data/
+firebase-export-*/
+
+# --- Credenciais (NUNCA versionar) ---
+*.pem
+*.key
+service-account*.json
+*credentials*.json
+
+# --- Terraform ---
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# --- Editores ---
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- Sistema operacional ---
+.DS_Store
+Thumbs.db
+
+# --- Agentes de IA (configuração pessoal, não compartilhada) ---
+.claude/settings.local.json

@@ -1,0 +1,53 @@
+name: História de usuário
+description: Nova história do backlog do Habilita
+title: "[HXX] "
+body:
+  - type: input
+    id: id
+    attributes:
+      label: ID da história
+      description: "Identificador no backlog (ex.: H03)."
+      placeholder: H03
+    validations:
+      required: true
+  - type: textarea
+    id: narrativa
+    attributes:
+      label: História
+      description: "Formato: Como [papel], quero [ação], para [benefício]."
+      placeholder: Como gestor de contratos, quero rejeitar um documento informando o motivo, para que a terceirizada saiba o que corrigir.
+    validations:
+      required: true
+  - type: dropdown
+    id: jornada
+    attributes:
+      label: Jornada
+      options:
+        - J1
+        - J2
+        - J3
+        - J4
+        - J5
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Critérios de aceite
+      description: Mensuráveis, com número ou limite. Use IDs (H03.CA1, H03.CA2...).
+      placeholder: |
+        - H03.CA1: rejeitar sem motivo retorna 400.
+        - H03.CA2: o motivo tem entre 10 e 500 caracteres.
+    validations:
+      required: true
+  - type: dropdown
+    id: prioridade
+    attributes:
+      label: Prioridade (MoSCoW)
+      options:
+        - Must (obrigatório)
+        - Should (importante)
+        - Could (desejável)
+        - Won't (não agora)
+    validations:
+      required: true
