@@ -28,16 +28,67 @@ Empresas que contratam terceirizados controlam documentos por trabalhador e cont
 
 ## Pré-requisitos
 
-> Detalhes de instalação serão acrescentados no Prompt 2.
-
-- Git
-- Docker Desktop (no Windows, com WSL2 ativado)
-- Python 3.12 com [`uv`](https://docs.astral.sh/uv/)
-- Node.js LTS
+- **Docker e Docker Compose:**
+  - **Linux:** Docker Engine + plugin Docker Compose (`docker compose version`). Adicione seu usuário ao grupo `docker` (`sudo usermod -aG docker $USER`).
+  - **Windows:** Docker Desktop com backend WSL2. **Atenção:** clone o repositório dentro do sistema de arquivos do Linux no WSL (ex: `~/projects/Habilita`), **nunca** em `/mnt/c/` (para evitar lentidão drástica de I/O de disco). Recomendado limitar a memória do WSL2 criando `~/.wslconfig` no Windows com `memory=4GB`.
+  - **macOS:** Docker Desktop.
+- **Git**
+- *(Opcional)* Python 3.12 com [`uv`](https://docs.astral.sh/uv/) e Node.js 24 LTS, caso queira executar ferramentas fora do Docker.
 
 ## Como rodar
 
-Em breve: `docker compose up` (Prompt 2).
+O ambiente local sobe a API FastAPI, o frontend Vite e os emuladores do Firebase (Auth, Firestore, Storage e interface web). Funciona imediatamente em um clone limpo, sem precisar de `.env`:
+
+```bash
+# 1. Subir tudo com build das imagens:
+docker compose up --build
+
+# Ou em segundo plano (detached):
+docker compose up -d --build
+
+# 2. Ver status e saúde dos contêineres:
+docker compose ps
+
+# 3. Ver logs de um serviço específico (ex: api):
+docker compose logs -f api
+
+# 4. Parar todos os serviços:
+docker compose down
+
+# 5. Parar e limpar completamente volumes/dados efêmeros:
+docker compose down -v
+```
+
+### URLs e portas locais (127.0.0.1)
+
+Todas as portas são publicadas exclusivamente em `127.0.0.1` (loopback) para segurança:
+
+| Serviço | URL Local | Descrição |
+|---|---|---|
+| **Frontend Web** | [http://localhost:5173](http://localhost:5173) | SPA React + Vite |
+| **Proxy Web -> API** | [http://localhost:5173/api/healthz](http://localhost:5173/api/healthz) | Rewrite simulando Firebase Hosting |
+| **API** | [http://localhost:8000](http://localhost:8000) | FastAPI / Uvicorn |
+| **API Healthz** | [http://localhost:8000/healthz](http://localhost:8000/healthz) | Verificação de vida da API |
+| **Emuladores UI** | [http://localhost:4000](http://localhost:4000) | Painel visual do Firebase Emulator Suite |
+| **Auth Emulator** | `localhost:9099` | Emulador do Firebase Auth |
+| **Firestore Emulator** | `localhost:8080` | Emulador do Cloud Firestore |
+| **Storage Emulator** | `localhost:9199` | Emulador do Cloud Storage |
+
+### Problemas comuns
+
+- **Porta já ocupada (`port is already allocated`):**
+  Copie `.env.example` para `.env` (`cp .env.example .env`) e altere a porta desejada (ex: `API_HOST_PORT=8001` ou `WEB_HOST_PORT=5174`).
+- **Permissões de arquivos em volumes (Linux):**
+  Os contêineres rodam com usuário comum não-root de UID/GID 1000 (`app` e `node`), compatível com o primeiro usuário padrão de distribuições Linux/Ubuntu.
+- **Consumo de memória:**
+  Verifique o uso de memória a qualquer momento com `docker stats --no-stream`. O consumo ocioso total de todos os serviços combinados fica em torno de ~500 MB. Os processos Java dos emuladores já possuem teto configurado com `-Xmx512m`.
+- **Emuladores lentos na primeira subida:**
+  Na primeira inicialização, a JVM do Firestore e Storage pode levar até ~30 segundos para carregar. O `docker-compose.yml` já conta com `start_period` tolerante nos healthchecks.
+- **Como reconstruir imagens após alterar dependências:**
+  Se alterar `pyproject.toml`, `uv.lock`, `package.json` ou `package-lock.json`, reconstrua os contêineres com:
+  ```bash
+  docker compose up --build
+  ```
 
 ## Como contribuir
 
