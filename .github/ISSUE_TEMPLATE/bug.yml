@@ -1,0 +1,38 @@
+name: Bug
+description: Algo não funciona como deveria
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Não inclua dados pessoais reais (CPF, nomes, e-mails) nem segredos neste relato."
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Acesse ...
+        2. Clique em ...
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Resultado esperado
+    validations:
+      required: true
+  - type: textarea
+    id: obtido
+    attributes:
+      label: Resultado obtido
+      description: Inclua mensagens de erro ou logs (sem dados pessoais).
+    validations:
+      required: true
+  - type: textarea
+    id: ambiente
+    attributes:
+      label: Ambiente
+      description: Sistema operacional, navegador, branch/commit, local ou nuvem.
+      placeholder: Windows 11 + WSL2, Chrome 1XX, branch dev
+    validations:
+      required: true
