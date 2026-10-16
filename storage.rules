@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Nega TODO acesso direto ao Storage. O acesso é só pela API (Admin SDK, que ignora
+// estas regras), com URL assinada. Os testes das Security Rules vêm no Prompt 4.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

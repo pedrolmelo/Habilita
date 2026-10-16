@@ -21,29 +21,37 @@ Se uma ADR **aprovada** no `habilita-docs` contradisser este arquivo, a ADR venc
 - Local: Docker Compose + Firebase Emulator Suite (Auth, Firestore, Storage).
 - CI/CD: GitHub Actions com Workload Identity Federation; imagens no Artifact Registry com tag = SHA do commit.
 
-## Estrutura planejada do repositório
+## Estrutura do repositório
 
 ```text
-apps/
-  api/
-    src/habilita/<modulo>/
-      aplicacao/   # casos de uso (orquestram domínio e infra)
-      dominio/     # regras de negócio puras (sem FastAPI, sem infra)
-      infra/       # Firestore, Storage, Firebase Admin, HTTP
-    tests/
-      unit/  integration/  authz/  contract/  rules/  e2e/
-  web/             # SPA React
-seed/              # dados de demonstração e usuários com claims
-infra/             # Terraform (etapa futura)
+.
+├── apps/
+│   ├── api/          # API Python 3.12 + FastAPI + Uvicorn (uv, pyproject.toml)
+│   │   ├── src/habilita/
+│   │   │   ├── config.py      # Configurações tipadas (pydantic-settings)
+│   │   │   ├── main.py        # Fábrica FastAPI e registro de rotas
+│   │   │   └── saude/rotas.py # GET /healthz (contrato OpenAPI)
+│   │   └── Dockerfile         # Alvos: dev (recarga) e prod (enxuta, Cloud Run)
+│   └── web/          # Frontend React + TypeScript strict + Vite SPA
+│       ├── src/      # Componentes com estados explícitos (loading, success, error)
+│       └── Dockerfile# Alvo dev (Vite proxy /api -> API)
+├── infra/
+│   ├── emulators/    # Imagem Docker dos emuladores Firebase (JRE 21 headless)
+│   └── README.md     # Reservado para Terraform (etapa futura)
+├── seed/             # Dados de demonstração e usuários com claims (Prompt 4)
+├── docker-compose.yml# Orquestração local dos 3 serviços (127.0.0.1)
+├── firebase.json     # Configuração do Firebase Emulator Suite
+├── firestore.rules   # Regras deny-all do Firestore
+└── storage.rules     # Regras deny-all do Cloud Storage
 ```
-
-Hoje só existem as pastas com `README.md`. Não crie a estrutura interna antes da hora.
 
 ## Comandos
 
+- Subir ambiente local completo: `docker compose up --build` (ou em segundo plano: `docker compose up -d --build`)
+- Parar ambiente local: `docker compose down` (e `docker compose down -v` para limpar volumes)
 - Verificações de higiene e segredos: `pre-commit run --all-files`
-- TODO(Prompt 2): subir o ambiente local (`docker compose up`) e emuladores.
-- TODO(Prompt 3): lint, tipagem, testes e build da API e do web.
+- Verificações da API: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy`, `uv run lint-imports` (ou `docker compose exec api sh -c "ruff check . && ruff format --check . && mypy && lint-imports"`)
+- Verificações do frontend: `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run build` (ou `docker compose exec web sh -c "npm run lint && npm run typecheck && npm run format:check && npm run build"`)
 
 ## Convenções de Git e PR
 

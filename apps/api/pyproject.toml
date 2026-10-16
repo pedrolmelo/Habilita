@@ -1,0 +1,76 @@
+[project]
+name = "habilita-api"
+version = "0.1.0"
+description = "API do Habilita (FastAPI)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.143.3",
+    "pydantic-settings>=2.16.0",
+    "uvicorn>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "import-linter>=2.15",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# O pacote Python se chama `habilita` (pasta src/habilita), não `habilita_api`.
+module-name = "habilita"
+
+# ---------------------------------------------------------------------
+# Ruff: lint e formatação
+# ---------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# E/F: erros básicos | I: ordem dos imports | B: bugs comuns | UP: sintaxe moderna
+# S: segurança (bandit) | SIM: simplificações
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# `assert` é a forma normal de verificar algo em teste.
+"tests/**" = ["S101"]
+
+# ---------------------------------------------------------------------
+# mypy: tipagem estrita
+# ---------------------------------------------------------------------
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src"]
+plugins = ["pydantic.mypy"]
+
+# ---------------------------------------------------------------------
+# pytest (sem testes de negócio: o QA os cria)
+# ---------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers"
+
+# ---------------------------------------------------------------------
+# import-linter: protege a arquitetura (dominio puro)
+# ---------------------------------------------------------------------
+[tool.importlinter]
+root_package = "habilita"
+# Necessário para o contrato conseguir proibir o pacote externo `fastapi`.
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "dominio nao importa infra nem FastAPI"
+type = "forbidden"
+source_modules = ["habilita.*.dominio"]
+forbidden_modules = ["habilita.*.infra", "fastapi"]
+allow_indirect_imports = true

@@ -1,0 +1,154 @@
+# Ambiente local do Habilita: `docker compose up --build`
+#
+# Funciona num clone limpo, sem criar o `.env`. O `.env` é OPCIONAL e serve só para
+# sobrescrever valores (portas, nível de log...). Veja o `.env.example`.
+#
+# Três serviços:
+#   emulators -> Firebase Emulator Suite (Auth, Firestore, Storage) + interface web
+#   api       -> FastAPI (alvo `dev` do apps/api/Dockerfile, com recarga automática)
+#   web       -> Vite + React (alvo `dev` do apps/web/Dockerfile)
+# Ordem de subida: emulators -> api -> web (cada um espera o anterior ficar "healthy").
+
+name: habilita
+
+# Bloco reutilizado pelos 3 serviços: guarda os logs em arquivo JSON com rotação
+# (no máximo 3 arquivos de 10 MB por serviço) para não encher o disco.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Emuladores do Firebase (projeto `demo-habilita`: roda 100% local, sem Google Cloud)
+  # ---------------------------------------------------------------------------
+  emulators:
+    build:
+      context: . # raiz do repositório: a imagem copia firebase.json, *.rules e .firebaserc
+      dockerfile: infra/emulators/Dockerfile
+    image: habilita-emulators:local
+    # Portas SÓ no loopback (127.0.0.1): os emuladores não têm autenticação e nunca
+    # podem ficar acessíveis para outros computadores da rede.
+    ports:
+      - "127.0.0.1:${EMULATOR_UI_HOST_PORT:-4000}:4000" # interface dos emuladores
+      - "127.0.0.1:${AUTH_EMULATOR_HOST_PORT:-9099}:9099" # Auth
+      - "127.0.0.1:${FIRESTORE_EMULATOR_HOST_PORT:-8080}:8080" # Firestore
+      - "127.0.0.1:${STORAGE_EMULATOR_HOST_PORT:-9199}:9199" # Storage
+    healthcheck:
+      test: ["CMD", "node", "/usr/local/bin/healthcheck.mjs"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 40s # a primeira subida dos emuladores (JVM) é lenta
+    # Memória: 2 processos Java com heap máximo de 512m cada (JAVA_TOOL_OPTIONS na imagem)
+    # + Node do CLI e da interface. 1,5 GB dá folga sem deixar o consumo disparar.
+    mem_limit: 1536m
+    cpus: 1.5
+    init: true # processo "tini" como PID 1: repassa sinais de parada e evita processos zumbis
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true # impede ganhar privilégios extras dentro do contêiner
+    cap_drop:
+      - ALL # remove todas as capacidades especiais do Linux (não são necessárias)
+    logging: *logging
+
+  # ---------------------------------------------------------------------------
+  # API (FastAPI)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ./apps/api
+      target: dev
+    image: habilita-api:dev
+    # `.env` é opcional (required: false). Valores em `environment` abaixo têm prioridade.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PORT: "8000" # porta DENTRO do contêiner (a porta do host é API_HOST_PORT)
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-habilita}
+      # Endereços dos emuladores VISTOS DE DENTRO da rede do Compose: o host é o nome do
+      # serviço (`emulators`), não `localhost`. Quando essas variáveis existem, o SDK
+      # Admin do Firebase conecta nos emuladores em vez da nuvem.
+      FIREBASE_AUTH_EMULATOR_HOST: emulators:9099
+      FIRESTORE_EMULATOR_HOST: emulators:8080
+      FIREBASE_STORAGE_EMULATOR_HOST: emulators:9199
+      # Usada pelo cliente `google-cloud-storage` do Python (precisa do http://).
+      # TODO: confirmar com o Backend, quando a API passar a usar o Storage, qual das duas
+      # variáveis de Storage o código realmente lê (só a FIREBASE_... está na doc do Firebase).
+      STORAGE_EMULATOR_HOST: http://emulators:9199
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-8000}:8000"
+    volumes:
+      # Só o código-fonte (somente leitura): o Uvicorn recarrega ao salvar um arquivo.
+      - ./apps/api/src:/app/src:ro
+    depends_on:
+      emulators:
+        condition: service_healthy
+    healthcheck:
+      # Sem curl: usa o Python da própria imagem.
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    # A API é leve (uvicorn + FastAPI): 256 MB sobram.
+    mem_limit: 256m
+    cpus: 0.5
+    init: true
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *logging
+
+  # ---------------------------------------------------------------------------
+  # Web (Vite + React) — só desenvolvimento. Em produção são arquivos estáticos no
+  # Firebase Hosting; não existe imagem de produção do web.
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ./apps/web
+      target: dev
+    image: habilita-web:dev
+    environment:
+      # Para onde o proxy do Vite manda /api/* (o prefixo /api é removido).
+      API_PROXY_TARGET: http://api:8000
+    ports:
+      - "127.0.0.1:${WEB_HOST_PORT:-5173}:5173"
+    volumes:
+      # Só o código-fonte (somente leitura). `node_modules` fica DENTRO da imagem e
+      # não é sobrescrito. Mudou index.html, vite.config.ts ou package.json?
+      # Reconstrua: `docker compose up --build web`.
+      - ./apps/web/src:/app/src:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:5173/').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    # Vite + Node em desenvolvimento chegam a ~300 MB; 512 MB dá folga.
+    mem_limit: 512m
+    cpus: 1.0
+    init: true
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *logging
