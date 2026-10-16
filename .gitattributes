@@ -1,0 +1,19 @@
+# Normaliza quebras de linha para LF (padrão Linux) no repositório.
+# Motivo: a equipe usa Windows e WSL; scripts com CRLF (padrão Windows)
+# quebram dentro de contêineres Linux.
+* text=auto eol=lf
+
+# Arquivos que SEMPRE devem ficar em LF
+*.sh        text eol=lf
+Dockerfile* text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+# Binários: o Git não deve tentar converter nem mostrar diff de texto
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.pdf  binary
