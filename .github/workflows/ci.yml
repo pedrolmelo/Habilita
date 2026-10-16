@@ -171,3 +171,21 @@ jobs:
       - name: Compilar frontend (Vite build)
         working-directory: apps/web
         run: npm run build
+
+  dockerfiles:
+    name: dockerfiles
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validar Dockerfiles com Hadolint
+        run: |
+          docker run --rm \
+            -v "${PWD}:/repo" \
+            -w /repo \
+            hadolint/hadolint:v2.15.1-alpine@sha256:a1d49ae1a4e83c1dbad26b8c1ad7588c8bd1e04f4866b34ad3cac50335198552 \
+            hadolint apps/api/Dockerfile apps/web/Dockerfile infra/emulators/Dockerfile
