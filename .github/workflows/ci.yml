@@ -1,7 +1,6 @@
-# CI mínimo do Habilita (Prompt 1).
-# Os nomes dos jobs (`segredos` e `higiene`) são usados como checks obrigatórios
-# na proteção da `main`: NÃO renomeie sem atualizar a proteção no GitHub.
-# O Prompt 3 acrescentará lint, tipagem e build.
+# Pipeline de Integração Contínua (CI) do Habilita.
+# Checkpoint 1 (Fundação): segredos, higiene, qualidade (API e Web), build, dockerfiles e compose-smoke.
+# O job `ci-ok` consolida todos os jobs e deve ser configurado como o único check obrigatório na proteção da `main`.
 name: CI
 
 on:
@@ -262,3 +261,54 @@ jobs:
       - name: Derrubar ambiente e limpar volumes
         if: always()
         run: docker compose down -v
+
+  ci-ok:
+    name: ci-ok
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: always()
+    needs:
+      - segredos
+      - higiene
+      - api-qualidade
+      - web-qualidade
+      - web-build
+      - dockerfiles
+      - compose-smoke
+    steps:
+      - name: Validar integridade e sucesso de todos os jobs anteriores
+        env:
+          RESULTS: ${{ toJson(needs) }}
+        run: |
+          set -euo pipefail
+          echo "Status consolidado de cada job de verificação:"
+          python3 << 'EOF'
+          import json, os, sys
+
+          raw = os.environ.get("RESULTS", "{}")
+          try:
+              data = json.loads(raw)
+          except Exception as err:
+              print(f"ERRO: Falha ao decodificar JSON dos resultados: {err}")
+              sys.exit(1)
+
+          failed = []
+          for job, info in data.items():
+              result = info.get("result")
+              print(f"  - {job}: {result}")
+              # Decisão explícita sobre `skipped`:
+              # Não utilizamos filtros de paths (`paths:`) nos checks obrigatórios.
+              # Portanto, nenhum job deve ser "skipped". Se um job for pulado (por exemplo,
+              # se um job dependente não executou porque a dependência falhou, ou por filtro
+              # acidental), consideramos falha do check agregador.
+              if result != "success":
+                  failed.append((job, result))
+
+          if failed:
+              print("\nERRO: Os seguintes jobs NÃO foram concluídos com sucesso:")
+              for job, res in failed:
+                  print(f"  ❌ {job}: status \"{res}\" (esperado: \"success\")")
+              sys.exit(1)
+
+          print("\n✅ Todos os jobs anteriores foram concluídos com sucesso. ci-ok aprovado!")
+          EOF
