@@ -152,3 +152,36 @@ services:
     cap_drop:
       - ALL
     logging: *logging
+
+  # ---------------------------------------------------------------------------
+  # Seed: popula os emuladores com dados de demonstração determinísticos.
+  # Não sobe no `docker compose up` padrão (profile `seed`).
+  # Execução manual: `docker compose --profile seed run --rm seed`
+  # ---------------------------------------------------------------------------
+  seed:
+    profiles:
+      - seed
+    build:
+      context: ./seed
+      dockerfile: Dockerfile
+    image: habilita-seed:local
+    environment:
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-habilita}
+      FIREBASE_AUTH_EMULATOR_HOST: emulators:9099
+      FIRESTORE_EMULATOR_HOST: emulators:8080
+      FIREBASE_STORAGE_EMULATOR_HOST: emulators:9199
+      STORAGE_EMULATOR_HOST: http://emulators:9199
+      STORAGE_BUCKET_NAME: ${STORAGE_BUCKET_NAME:-demo-habilita.appspot.com}
+      CPF_HMAC_KEY: ${CPF_HMAC_KEY:-demo-cpf-hmac-key-for-emulator-only}
+    depends_on:
+      emulators:
+        condition: service_healthy
+    mem_limit: 256m
+    cpus: 0.5
+    init: true
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *logging
