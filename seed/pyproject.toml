@@ -1,0 +1,46 @@
+[project]
+name = "habilita-seed"
+version = "0.1.0"
+description = "Gerador determinístico de dados de demonstração e teste para o Habilita"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # firebase-admin é o SDK oficial também adotado pelo backend da aplicação.
+    # Ele permite configurar custom claims no Auth emulator e interagir de forma
+    # nativa com os emuladores de Firestore e Cloud Storage sem acessar a nuvem.
+    "firebase-admin>=6.6.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.0",
+    "ruff>=0.17.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "habilita_seed"
+
+# ---------------------------------------------------------------------
+# Ruff: lint e formatação
+# ---------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+# E/F: erros básicos | I: ordem dos imports | B: bugs comuns | UP: sintaxe moderna
+# S: segurança (bandit) | SIM: simplificações
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+
+# ---------------------------------------------------------------------
+# mypy: tipagem estrita
+# ---------------------------------------------------------------------
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src"]
