@@ -31,6 +31,20 @@ updates:
         patterns:
           - "*"
 
+  # Seed Python gerenciado pelo uv (pyproject.toml + uv.lock).
+  - package-ecosystem: uv
+    directory: /seed
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      python-deps:
+        patterns:
+          - "*"
+
   # Frontend (package.json + package-lock.json).
   - package-ecosystem: npm
     directory: /apps/web
@@ -57,6 +71,7 @@ updates:
       - /apps/api
       - /apps/web
       - /infra/emulators
+      - /seed
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

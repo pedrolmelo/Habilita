@@ -112,6 +112,41 @@ jobs:
         working-directory: apps/api
         run: uv run lint-imports
 
+  seed-qualidade:
+    name: seed-qualidade
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configurar uv e Python 3.12
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.1"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "seed/uv.lock"
+
+      - name: Sincronizar dependências do seed
+        working-directory: seed
+        run: uv sync --frozen
+
+      - name: Verificar lint com Ruff
+        working-directory: seed
+        run: uv run ruff check .
+
+      - name: Verificar formatação com Ruff
+        working-directory: seed
+        run: uv run ruff format --check .
+
+      - name: Verificar tipagem com mypy
+        working-directory: seed
+        run: uv run mypy
+
+
   web-qualidade:
     name: web-qualidade
     runs-on: ubuntu-24.04
@@ -187,7 +222,7 @@ jobs:
             -v "${PWD}:/repo" \
             -w /repo \
             hadolint/hadolint:v2.15.1-alpine@sha256:a1d49ae1a4e83c1dbad26b8c1ad7588c8bd1e04f4866b34ad3cac50335198552 \
-            hadolint apps/api/Dockerfile apps/web/Dockerfile infra/emulators/Dockerfile
+            hadolint apps/api/Dockerfile apps/web/Dockerfile infra/emulators/Dockerfile seed/Dockerfile
 
   compose-smoke:
     name: compose-smoke
@@ -196,6 +231,7 @@ jobs:
     needs:
       - api-qualidade
       - web-qualidade
+      - seed-qualidade
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -224,6 +260,40 @@ jobs:
 
           echo "==> Testando interface web dos emuladores (GET http://127.0.0.1:4000)..."
           curl -sS -f -I http://127.0.0.1:4000 > /dev/null
+
+      - name: Popular dados com seed e verificar idempotência
+        run: |
+          set -euo pipefail
+
+          echo "==> Executando seed pela primeira vez..."
+          docker compose --profile seed run --rm seed
+
+          echo "==> Verificando estado e capturando checksum inicial..."
+          res1=$(docker compose --profile seed run --rm seed --verificar 2>&1)
+          echo "$res1"
+          checksum1=$(echo "$res1" | grep "CHECKSUM FIRESTORE:" | awk '{print $NF}' || true)
+          if [ -z "$checksum1" ]; then
+            echo "ERRO: Checksum inicial não capturado."
+            exit 1
+          fi
+
+          echo "==> Executando seed pela segunda vez (teste de idempotência)..."
+          docker compose --profile seed run --rm seed
+
+          echo "==> Verificando estado e capturando checksum da segunda execução..."
+          res2=$(docker compose --profile seed run --rm seed --verificar 2>&1)
+          echo "$res2"
+          checksum2=$(echo "$res2" | grep "CHECKSUM FIRESTORE:" | awk '{print $NF}' || true)
+          if [ -z "$checksum2" ]; then
+            echo "ERRO: Checksum secundário não capturado."
+            exit 1
+          fi
+
+          if [ "$checksum1" != "$checksum2" ]; then
+            echo "ERRO: Idempotência violada! Checksum 1 ($checksum1) != Checksum 2 ($checksum2)"
+            exit 1
+          fi
+          echo "Idempotência confirmada com sucesso: checksum $checksum1 mantido intacto."
 
       - name: Validar regra deny-all no emulador do Firestore
         run: |
@@ -275,6 +345,7 @@ jobs:
       - web-build
       - dockerfiles
       - compose-smoke
+      - seed-qualidade
     steps:
       - name: Validar integridade e sucesso de todos os jobs anteriores
         env:

@@ -49,11 +49,13 @@ Se uma ADR **aprovada** no `habilita-docs` contradisser este arquivo, a ADR venc
 
 - Subir ambiente local completo: `docker compose up --build` (ou em segundo plano: `docker compose up -d --build`)
 - Parar ambiente local: `docker compose down` (e `docker compose down -v` para limpar volumes)
+- Executar seed de demonstração: `docker compose --profile seed run --rm seed` (modo verificação: `docker compose --profile seed run --rm seed --verificar`)
 - Verificações de higiene e segredos: `pre-commit run --all-files`
 - Verificações da API: `uv run ruff check .`, `uv run ruff format --check .`, `uv run mypy`, `uv run lint-imports` (ou `docker compose exec api sh -c "ruff check . && ruff format --check . && mypy && lint-imports"`)
+- Verificações do seed: `cd seed && uv run ruff check . && uv run ruff format --check . && uv run mypy`
 - Verificações do frontend: `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm run build` (ou `docker compose exec web sh -c "npm run lint && npm run typecheck && npm run format:check && npm run build"`)
-- Verificação dos Dockerfiles: `docker run --rm -v "$PWD:/repo" -w /repo hadolint/hadolint:v2.15.1-alpine hadolint apps/api/Dockerfile apps/web/Dockerfile infra/emulators/Dockerfile`
-- Smoke test local do Compose: `docker compose up -d --build --wait && curl -sS -f http://127.0.0.1:8000/healthz && curl -sS -f http://127.0.0.1:5173/api/healthz && docker compose down -v`
+- Verificação dos Dockerfiles: `docker run --rm -v "$PWD:/repo" -w /repo hadolint/hadolint:v2.15.1-alpine hadolint apps/api/Dockerfile apps/web/Dockerfile infra/emulators/Dockerfile seed/Dockerfile`
+- Smoke test local do Compose: `docker compose up -d --build --wait && curl -sS -f http://127.0.0.1:8000/healthz && curl -sS -f http://127.0.0.1:5173/api/healthz && docker compose --profile seed run --rm seed && docker compose down -v`
 
 ## Convenções de Git e PR
 
@@ -97,6 +99,7 @@ Se uma ADR **aprovada** no `habilita-docs` contradisser este arquivo, a ADR venc
 - Tag da imagem = SHA do commit; nunca `latest` em produção.
 - Nenhum recurso de GCP sem ADR ou aprovação do Tech Lead.
 - Até a Semana 4 (01/11) tudo roda localmente; gasto zero.
+- O seed só roda contra emuladores locais (Auth, Firestore e Storage); aborta obrigatoriamente se detectar credenciais reais ou hosts não-locais.
 
 ### Testes
 - O nome do teste referencia o critério: `test_h03_ca2_rejeitar_sem_motivo_retorna_400`.

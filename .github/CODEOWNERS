@@ -39,3 +39,4 @@
 /infra/emulators/       @pedrolmelo
 /apps/api/Dockerfile    @pedrolmelo
 /apps/web/Dockerfile    @pedrolmelo
+/seed/Dockerfile        @pedrolmelo
