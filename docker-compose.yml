@@ -83,8 +83,9 @@ services:
     ports:
       - "127.0.0.1:${API_HOST_PORT:-8000}:8000"
     volumes:
-      # Só o código-fonte (somente leitura): o Uvicorn recarrega ao salvar um arquivo.
+      # Código-fonte e testes (somente leitura): recarga automática e execução de testes.
       - ./apps/api/src:/app/src:ro
+      - ./apps/api/tests:/app/tests:ro
     depends_on:
       emulators:
         condition: service_healthy
