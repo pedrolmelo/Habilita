@@ -269,9 +269,9 @@ jobs:
           docker compose --profile seed run --rm seed
 
           echo "==> Verificando estado e capturando checksum inicial..."
-          res1=$(docker compose --profile seed run --rm seed --verificar)
+          res1=$(docker compose --profile seed run --rm seed --verificar 2>&1)
           echo "$res1"
-          checksum1=$(echo "$res1" | grep "CHECKSUM FIRESTORE:" | awk '{print $NF}')
+          checksum1=$(echo "$res1" | grep "CHECKSUM FIRESTORE:" | awk '{print $NF}' || true)
           if [ -z "$checksum1" ]; then
             echo "ERRO: Checksum inicial não capturado."
             exit 1
@@ -281,9 +281,9 @@ jobs:
           docker compose --profile seed run --rm seed
 
           echo "==> Verificando estado e capturando checksum da segunda execução..."
-          res2=$(docker compose --profile seed run --rm seed --verificar)
+          res2=$(docker compose --profile seed run --rm seed --verificar 2>&1)
           echo "$res2"
-          checksum2=$(echo "$res2" | grep "CHECKSUM FIRESTORE:" | awk '{print $NF}')
+          checksum2=$(echo "$res2" | grep "CHECKSUM FIRESTORE:" | awk '{print $NF}' || true)
           if [ -z "$checksum2" ]; then
             echo "ERRO: Checksum secundário não capturado."
             exit 1

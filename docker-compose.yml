@@ -165,6 +165,7 @@ services:
       context: ./seed
       dockerfile: Dockerfile
     image: habilita-seed:local
+    pull_policy: build
     environment:
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-habilita}
       FIREBASE_AUTH_EMULATOR_HOST: emulators:9099
