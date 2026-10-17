@@ -44,6 +44,12 @@ updates:
       npm-deps:
         patterns:
           - "*"
+        update-types: ["minor", "patch"]
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   # Imagens base dos Dockerfiles (tag + digest).
   - package-ecosystem: docker
@@ -61,6 +67,14 @@ updates:
       docker-images:
         patterns:
           - "*"
+        update-types: ["minor", "patch"]
+    ignore:
+      # Python fica na 3.12: só aceita patches (3.12.x)
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # Node fica no LTS ativo (24): só aceita minors e patches
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
 
   # docker-compose.yml da raiz.
   - package-ecosystem: docker-compose
