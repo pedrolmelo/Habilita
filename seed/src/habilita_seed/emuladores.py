@@ -3,11 +3,13 @@
 import hashlib
 import json
 import logging
+import urllib.parse
 import urllib.request
 from datetime import date, timedelta
 
 import firebase_admin
-from firebase_admin import auth, firestore, storage
+import google.auth.credentials
+from firebase_admin import auth, credentials, firestore, storage
 from google.cloud.firestore import Client as FirestoreClient
 
 from habilita_seed.config import SeedConfig
@@ -21,16 +23,24 @@ from habilita_seed.pdf import calcular_sha256, derivar_uuid_arquivo, gerar_pdf_f
 logger = logging.getLogger("habilita_seed")
 
 
+class EmulatorCredentials(credentials.Base):  # type: ignore[misc]
+    """Credencial anônima segura para conexão exclusiva com os emuladores locais."""
+
+    def get_credential(self) -> google.auth.credentials.Credentials:
+        return google.auth.credentials.AnonymousCredentials()  # type: ignore[no-untyped-call]
+
+
 def obter_firebase_app(config: SeedConfig) -> firebase_admin.App:
     """Inicializa ou recupera a instância padrão do Firebase Admin SDK."""
     try:
         return firebase_admin.get_app()
     except ValueError:
         return firebase_admin.initialize_app(
+            credential=EmulatorCredentials(),
             options={
                 "projectId": config.project_id,
                 "storageBucket": config.storage_bucket,
-            }
+            },
         )
 
 
@@ -352,6 +362,22 @@ def calcular_checksum_firestore(config: SeedConfig) -> str:
     return hasher.hexdigest()
 
 
+def baixar_bytes_blob(config: SeedConfig, caminho: str) -> bytes:
+    """Baixa o conteúdo binário do blob diretamente do emulador de Storage.
+
+    O emulador do Storage retorna media_link com 127.0.0.1 hardcoded nos metadados,
+    o que falha na rede Docker (onde o host é 'emulators'). Por isso, consultamos
+    o endpoint direto usando o host configurado do emulador.
+    """
+    safe_path = urllib.parse.quote(caminho, safe="")
+    host = config.storage_emulator_host
+    base_url = host if "://" in host else f"http://{host}"
+    url = f"{base_url}/download/storage/v1/b/{config.storage_bucket}/o/{safe_path}?alt=media"
+    req = urllib.request.Request(url)  # noqa: S310
+    with urllib.request.urlopen(req) as resp:  # noqa: S310
+        return resp.read()  # type: ignore[no-any-return]
+
+
 def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bool, list[str], str]:
     """Verifica contagens, integridade de isolamento, regras e calcula o checksum."""
     erros: list[str] = []
@@ -401,8 +427,6 @@ def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bo
 
     # 2. Checagem de documentos no Firestore e arquivos no Storage
     tenants = ["tnt_alfa", "tnt_beta"]
-    total_docs = 0
-    total_alocs = 0
 
     cpfs_alfa: set[str] = set()
     cpfs_beta: set[str] = set()
@@ -415,7 +439,6 @@ def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bo
         for trb in trabalhadores:
             docs = list(trb.reference.collection("documentos").stream())
             for d in docs:
-                total_docs += 1
                 doc_data = d.to_dict()
                 arq = doc_data.get("arquivo", {})
                 caminho = arq.get("caminho", "")
@@ -436,20 +459,22 @@ def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bo
                             f"Arquivo '{caminho}' possui contentType '{blob.content_type}', "
                             "esperado 'application/pdf'."
                         )
-                    conteudo = blob.download_as_bytes()
-                    sha_real = hashlib.sha256(conteudo).hexdigest()
-                    if sha_real != arq.get("sha256"):
-                        erros.append(
-                            f"Hash divergente no documento {d.id}: real '{sha_real}' "
-                            f"!= armazenado '{arq.get('sha256')}'."
-                        )
+                    try:
+                        conteudo = baixar_bytes_blob(config, caminho)
+                        sha_real = hashlib.sha256(conteudo).hexdigest()
+                        if sha_real != arq.get("sha256"):
+                            erros.append(
+                                f"Hash divergente no documento {d.id}: real '{sha_real}' "
+                                f"!= armazenado '{arq.get('sha256')}'."
+                            )
+                    except Exception as exc:
+                        erros.append(f"Falha ao baixar blob '{caminho}': {exc}")
 
         # Checar alocações e semáforo
         contratos = list(t_ref.collection("contratos").stream())
         for ctr in contratos:
             alocs = list(ctr.reference.collection("alocacoes").stream())
             for aloc in alocs:
-                total_alocs += 1
                 aloc_data = aloc.to_dict()
                 semaforo = aloc_data.get("semaforo")
                 if semaforo not in ("VERDE", "AMARELO", "VERMELHO"):
