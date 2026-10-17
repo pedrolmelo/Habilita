@@ -1,13 +1,13 @@
-# CI mínimo do Habilita (Prompt 1).
-# Os nomes dos jobs (`segredos` e `higiene`) são usados como checks obrigatórios
-# na proteção da `main`: NÃO renomeie sem atualizar a proteção no GitHub.
-# O Prompt 3 acrescentará lint, tipagem e build.
+# Pipeline de Integração Contínua (CI) do Habilita.
+# Checkpoint 1 (Fundação): segredos, higiene, qualidade (API e Web), build, dockerfiles e compose-smoke.
+# O job `ci-ok` consolida todos os jobs e deve ser configurado como o único check obrigatório na proteção da `main`.
 name: CI
 
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 # Menor permissão possível: o CI só precisa ler o código.
 permissions:
@@ -73,3 +73,242 @@ jobs:
           # O Gitleaks já roda no job `segredos`.
           SKIP: gitleaks
         run: pre-commit run --all-files --show-diff-on-failure
+
+  api-qualidade:
+    name: api-qualidade
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configurar uv e Python 3.12
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.1"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "apps/api/uv.lock"
+
+      - name: Sincronizar dependências da API
+        working-directory: apps/api
+        run: uv sync --frozen
+
+      - name: Verificar lint com Ruff
+        working-directory: apps/api
+        run: uv run ruff check .
+
+      - name: Verificar formatação com Ruff
+        working-directory: apps/api
+        run: uv run ruff format --check .
+
+      - name: Verificar tipagem com mypy
+        working-directory: apps/api
+        run: uv run mypy
+
+      - name: Verificar arquitetura com import-linter
+        working-directory: apps/api
+        run: uv run lint-imports
+
+  web-qualidade:
+    name: web-qualidade
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configurar Node.js (versão sincronizada com apps/web/.nvmrc)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: "apps/web/.nvmrc"
+          cache: "npm"
+          cache-dependency-path: "apps/web/package-lock.json"
+
+      - name: Instalar dependências do frontend (npm ci congelado e sem scripts)
+        working-directory: apps/web
+        run: npm ci --ignore-scripts
+
+      - name: Verificar lint com ESLint
+        working-directory: apps/web
+        run: npm run lint
+
+      - name: Verificar tipagem com TypeScript (tsc)
+        working-directory: apps/web
+        run: npm run typecheck
+
+      - name: Verificar formatação com Prettier
+        working-directory: apps/web
+        run: npm run format:check
+
+  web-build:
+    name: web-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: web-qualidade
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Configurar Node.js (versão sincronizada com apps/web/.nvmrc)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: "apps/web/.nvmrc"
+          cache: "npm"
+          cache-dependency-path: "apps/web/package-lock.json"
+
+      - name: Instalar dependências do frontend (npm ci congelado e sem scripts)
+        working-directory: apps/web
+        run: npm ci --ignore-scripts
+
+      - name: Compilar frontend (Vite build)
+        working-directory: apps/web
+        run: npm run build
+
+  dockerfiles:
+    name: dockerfiles
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validar Dockerfiles com Hadolint
+        run: |
+          docker run --rm \
+            -v "${PWD}:/repo" \
+            -w /repo \
+            hadolint/hadolint:v2.15.1-alpine@sha256:a1d49ae1a4e83c1dbad26b8c1ad7588c8bd1e04f4866b34ad3cac50335198552 \
+            hadolint apps/api/Dockerfile apps/web/Dockerfile infra/emulators/Dockerfile
+
+  compose-smoke:
+    name: compose-smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs:
+      - api-qualidade
+      - web-qualidade
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validar configuração do Docker Compose (sem .env)
+        run: docker compose config --quiet
+
+      - name: Subir ambiente local completo
+        run: docker compose up -d --build --wait --wait-timeout 300
+
+      - name: Testar endpoints de saúde e proxy
+        run: |
+          set -euo pipefail
+
+          echo "==> Testando API direta (GET http://127.0.0.1:8000/healthz)..."
+          api_res=$(curl -sS -f http://127.0.0.1:8000/healthz)
+          echo "Resposta da API: $api_res"
+          echo "$api_res" | grep -q '"status":"ok"'
+
+          echo "==> Testando proxy Web -> API (GET http://127.0.0.1:5173/api/healthz)..."
+          web_res=$(curl -sS -f http://127.0.0.1:5173/api/healthz)
+          echo "Resposta do proxy: $web_res"
+          echo "$web_res" | grep -q '"status":"ok"'
+
+          echo "==> Testando interface web dos emuladores (GET http://127.0.0.1:4000)..."
+          curl -sS -f -I http://127.0.0.1:4000 > /dev/null
+
+      - name: Validar regra deny-all no emulador do Firestore
+        run: |
+          set -euo pipefail
+
+          echo "==> Enviando escrita não autenticada na API REST do Firestore..."
+          http_code=$(curl -s -o /tmp/firestore_response.json -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"fields": {"probe": {"stringValue": "ci-deny-all"}}}' \
+            "http://127.0.0.1:8080/v1/projects/demo-habilita/databases/(default)/documents/probe_smoke")
+
+          echo "Código HTTP retornado: $http_code"
+          if [ "$http_code" != "403" ]; then
+            echo "ERRO: Esperado HTTP 403 (PERMISSION_DENIED), obtido HTTP $http_code"
+            cat /tmp/firestore_response.json
+            exit 1
+          fi
+
+          grep -q "PERMISSION_DENIED" /tmp/firestore_response.json || {
+            echo "ERRO: O corpo da resposta não contém 'PERMISSION_DENIED':"
+            cat /tmp/firestore_response.json
+            exit 1
+          }
+
+          echo "Regra deny-all validada com sucesso: escrita rejeitada com 403 PERMISSION_DENIED."
+
+      - name: Exibir diagnóstico em caso de falha
+        if: failure()
+        run: |
+          echo "=== docker compose ps ==="
+          docker compose ps
+          echo "=== docker compose logs ==="
+          docker compose logs --no-color
+
+      - name: Derrubar ambiente e limpar volumes
+        if: always()
+        run: docker compose down -v
+
+  ci-ok:
+    name: ci-ok
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: always()
+    needs:
+      - segredos
+      - higiene
+      - api-qualidade
+      - web-qualidade
+      - web-build
+      - dockerfiles
+      - compose-smoke
+    steps:
+      - name: Validar integridade e sucesso de todos os jobs anteriores
+        env:
+          RESULTS: ${{ toJson(needs) }}
+        run: |
+          set -euo pipefail
+          echo "Status consolidado de cada job de verificação:"
+          python3 << 'EOF'
+          import json, os, sys
+
+          raw = os.environ.get("RESULTS", "{}")
+          try:
+              data = json.loads(raw)
+          except Exception as err:
+              print(f"ERRO: Falha ao decodificar JSON dos resultados: {err}")
+              sys.exit(1)
+
+          failed = []
+          for job, info in data.items():
+              result = info.get("result")
+              print(f"  - {job}: {result}")
+              # Decisão explícita sobre `skipped`:
+              # Não utilizamos filtros de paths (`paths:`) nos checks obrigatórios.
+              # Portanto, nenhum job deve ser "skipped". Se um job for pulado (por exemplo,
+              # se um job dependente não executou porque a dependência falhou, ou por filtro
+              # acidental), consideramos falha do check agregador.
+              if result != "success":
+                  failed.append((job, result))
+
+          if failed:
+              print("\nERRO: Os seguintes jobs NÃO foram concluídos com sucesso:")
+              for job, res in failed:
+                  print(f"  ❌ {job}: status \"{res}\" (esperado: \"success\")")
+              sys.exit(1)
+
+          print("\n✅ Todos os jobs anteriores foram concluídos com sucesso. ci-ok aprovado!")
+          EOF

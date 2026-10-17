@@ -7,6 +7,7 @@ Em produção, os arquivos compilados (`dist/`) são estáticos e hospedados no 
 ## Como rodar com Docker (recomendado)
 
 O servidor de desenvolvimento do Vite sobe automaticamente via Compose:
+
 ```bash
 docker compose up -d web
 ```
@@ -18,11 +19,13 @@ Acesse em: [http://localhost:5173](http://localhost:5173).
 - As dependências (`node_modules`) ficam isoladas dentro da imagem e não são sobrescritas pelo volume local.
 
 > **Dica para o VS Code / editor:** Para ter autocompletar e tipagem no editor sem precisar de Node na sua máquina hospedeira, a pasta `apps/web/node_modules/` pode ser sincronizada a partir do contêiner:
+>
 > ```bash
 > docker run --rm -v "$PWD/apps/web":/host habilita-web:dev cp -rp /app/node_modules /host/
 > ```
 
 Para rodar verificações de qualidade dentro do contêiner:
+
 ```bash
 docker compose exec web sh -c "npm run lint && npm run typecheck && npm run format:check && npm run build"
 ```
@@ -32,11 +35,13 @@ docker compose exec web sh -c "npm run lint && npm run typecheck && npm run form
 Pré-requisitos: Node.js 24 LTS e `npm`.
 
 1. Instale as dependências:
+
    ```bash
    npm ci
    ```
 
 2. Se a API estiver rodando localmente (seja no Docker ou na sua máquina na porta 8000), defina o destino do proxy:
+
    ```bash
    export API_PROXY_TARGET=http://localhost:8000
    npm run dev

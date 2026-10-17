@@ -1,0 +1,14 @@
+# Configuração do Hadolint (linter de Dockerfiles) para o Habilita.
+# Regras ignoradas justificadas caso a caso.
+
+ignored:
+  # DL3008: Exigência de fixar versão em `apt-get install <pacote>=<versão>`.
+  # Justificativa: No Debian trixie (usado na imagem dos emuladores), versões específicas de pacotes
+  # como openjdk-21-jre-headless são frequentemente substituídas e removidas dos espelhos ao receberem
+  # patches de segurança. Fixar a versão exata quebra o build periodicamente com erros de 404 do apt.
+  - DL3008
+
+  # DL3066: Exigência de declarar USER por UID numérico em vez de nome de usuário.
+  # Justificativa: O usuário 'node' é o usuário não-root padrão fornecido pelas imagens oficiais do Node.js,
+  # com UID e GID 1000 fixos e documentados. O uso do nome 'node' melhora a legibilidade e mantém a convenção oficial.
+  - DL3066
