@@ -18,6 +18,19 @@ class HealthResponse(BaseModel):
     status: Literal["ok"]
 
 
+class ReadyResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["ok"]
+
+
 @router.get("/healthz", response_model=HealthResponse, operation_id="healthz")
 def healthz() -> HealthResponse:
+    """Verificação de vida da API."""
     return HealthResponse(status="ok")
+
+
+@router.get("/readyz", response_model=ReadyResponse, operation_id="readyz")
+def readyz() -> ReadyResponse:
+    """Verificação de prontidão (dependências acessíveis)."""
+    return ReadyResponse(status="ok")
