@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from habilita.cadastros.rotas import router as cadastros_router
 from habilita.comum.erros import (
     AppException,
     app_exception_handler,
@@ -44,6 +45,7 @@ def create_app() -> FastAPI:
 
     # Registro de rotas
     app.include_router(saude_router)
+    app.include_router(cadastros_router)
 
     return app
 
