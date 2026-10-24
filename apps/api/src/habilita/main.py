@@ -16,6 +16,7 @@ from habilita.comum.erros import (
 )
 from habilita.config import get_settings
 from habilita.saude.rotas import router as saude_router
+from habilita.trabalhadores.rotas import router as trabalhadores_router
 
 
 def create_app() -> FastAPI:
@@ -46,6 +47,7 @@ def create_app() -> FastAPI:
     # Registro de rotas
     app.include_router(saude_router)
     app.include_router(cadastros_router)
+    app.include_router(trabalhadores_router)
 
     return app
 
