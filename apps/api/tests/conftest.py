@@ -4,6 +4,8 @@ Contém fixtures para o cliente de teste FastAPI e geradores de cabeçalhos
 autenticados baseados nas custom claims definidas na ADR 0002.
 """
 
+from __future__ import annotations
+
 from collections.abc import Generator
 
 import pytest

@@ -1,0 +1,3213 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Habilita API",
+    "description": "API de conformidade documental de SST multi-tenant",
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/healthz": {
+      "get": {
+        "tags": [
+          "Sistema"
+        ],
+        "summary": "Healthz",
+        "description": "Verificação de vida da API.",
+        "operationId": "healthz",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/readyz": {
+      "get": {
+        "tags": [
+          "Sistema"
+        ],
+        "summary": "Readyz",
+        "description": "Verificação de prontidão (dependências acessíveis).",
+        "operationId": "readyz",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/terceirizadas": {
+      "get": {
+        "tags": [
+          "Cadastros"
+        ],
+        "summary": "Listar terceirizadas do tenant",
+        "operationId": "listar_terceirizadas_terceirizadas_get",
+        "parameters": [
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limite"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_Terceirizada_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Cadastros"
+        ],
+        "summary": "Cadastrar terceirizada",
+        "operationId": "cadastrar_terceirizada_terceirizadas_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovaTerceirizada"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Terceirizada"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tipos-documento": {
+      "get": {
+        "tags": [
+          "Cadastros"
+        ],
+        "summary": "Listar tipos de documento do tenant",
+        "operationId": "listar_tipos_documento_tipos_documento_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaTiposDocumento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Cadastros"
+        ],
+        "summary": "Cadastrar tipo de documento",
+        "operationId": "cadastrar_tipo_documento_tipos_documento_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovoTipoDocumento"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoDocumento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contratos": {
+      "get": {
+        "tags": [
+          "Cadastros"
+        ],
+        "summary": "Listar contratos",
+        "operationId": "listar_contratos_contratos_get",
+        "parameters": [
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limite"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_Contrato_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Cadastros"
+        ],
+        "summary": "Criar contrato",
+        "operationId": "criar_contrato_contratos_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovoContrato"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contrato"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contratos/{contrato_id}": {
+      "get": {
+        "tags": [
+          "Cadastros"
+        ],
+        "summary": "Detalhar contrato",
+        "operationId": "detalhar_contrato_contratos__contrato_id__get",
+        "parameters": [
+          {
+            "name": "contrato_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Contrato Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contrato"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contratos/{contrato_id}/exigencias": {
+      "put": {
+        "tags": [
+          "Cadastros"
+        ],
+        "summary": "Substituir matriz de exigências do contrato",
+        "operationId": "substituir_exigencias_contrato_contratos__contrato_id__exigencias_put",
+        "parameters": [
+          {
+            "name": "contrato_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Contrato Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubstituirExigencias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contrato"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trabalhadores": {
+      "get": {
+        "tags": [
+          "Trabalhadores"
+        ],
+        "summary": "Listar trabalhadores",
+        "operationId": "listar_trabalhadores_trabalhadores_get",
+        "parameters": [
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limite"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_Trabalhador_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Trabalhadores"
+        ],
+        "summary": "Cadastrar trabalhador",
+        "operationId": "cadastrar_trabalhador_trabalhadores_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovoTrabalhador"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Trabalhador"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trabalhadores/{trabalhador_id}": {
+      "get": {
+        "tags": [
+          "Trabalhadores"
+        ],
+        "summary": "Detalhar trabalhador com documentos e semáforo",
+        "operationId": "detalhar_trabalhador_trabalhadores__trabalhador_id__get",
+        "parameters": [
+          {
+            "name": "trabalhador_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trabalhador Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrabalhadorDetalhe"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contratos/{contrato_id}/alocacoes": {
+      "post": {
+        "tags": [
+          "Trabalhadores"
+        ],
+        "summary": "Vincular trabalhador ao contrato",
+        "operationId": "vincular_trabalhador_contrato_contratos__contrato_id__alocacoes_post",
+        "parameters": [
+          {
+            "name": "contrato_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Contrato Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovaAlocacao"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alocacao"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trabalhadores/{trabalhador_id}/documentos": {
+      "post": {
+        "tags": [
+          "Documentos"
+        ],
+        "summary": "Enviar documento (upload)",
+        "operationId": "enviar_documento_trabalhadores__trabalhador_id__documentos_post",
+        "parameters": [
+          {
+            "name": "trabalhador_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trabalhador Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_enviar_documento_trabalhadores__trabalhador_id__documentos_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Documento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documentos": {
+      "get": {
+        "tags": [
+          "Documentos"
+        ],
+        "summary": "Listar documentos (fila de revisão)",
+        "operationId": "listar_documentos_documentos_get",
+        "parameters": [
+          {
+            "name": "statusRevisao",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statusrevisao"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limite"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_Documento_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documentos/{documento_id}": {
+      "get": {
+        "tags": [
+          "Documentos"
+        ],
+        "summary": "Detalhar documento",
+        "operationId": "detalhar_documento_documentos__documento_id__get",
+        "parameters": [
+          {
+            "name": "documento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Documento Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Documento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documentos/{documento_id}/url-download": {
+      "post": {
+        "tags": [
+          "Documentos"
+        ],
+        "summary": "Gerar link temporário para visualizar o arquivo",
+        "operationId": "gerar_url_download_documentos__documento_id__url_download_post",
+        "parameters": [
+          {
+            "name": "documento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Documento Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UrlDownloadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documentos/{documento_id}/aprovacao": {
+      "post": {
+        "tags": [
+          "Documentos"
+        ],
+        "summary": "Aprovar documento",
+        "operationId": "aprovar_documento_documentos__documento_id__aprovacao_post",
+        "parameters": [
+          {
+            "name": "documento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Documento Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Documento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documentos/{documento_id}/rejeicao": {
+      "post": {
+        "tags": [
+          "Documentos"
+        ],
+        "summary": "Rejeitar documento com motivo obrigatório",
+        "operationId": "rejeitar_documento_documentos__documento_id__rejeicao_post",
+        "parameters": [
+          {
+            "name": "documento_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Documento Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-simulated-tenant-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Tenant-Id"
+            }
+          },
+          {
+            "name": "x-simulated-papel",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Papel"
+            }
+          },
+          {
+            "name": "x-simulated-terceirizada-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Terceirizada-Id"
+            }
+          },
+          {
+            "name": "x-simulated-uid",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Simulated-Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejeitarDocumentoPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Documento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Alocacao": {
+        "properties": {
+          "contratoId": {
+            "type": "string",
+            "title": "Contratoid"
+          },
+          "trabalhadorId": {
+            "type": "string",
+            "title": "Trabalhadorid"
+          },
+          "semaforo": {
+            "type": "string",
+            "enum": [
+              "VERDE",
+              "AMARELO",
+              "VERMELHO"
+            ],
+            "title": "Semaforo"
+          },
+          "pendencias": {
+            "items": {
+              "$ref": "#/components/schemas/Pendencia"
+            },
+            "type": "array",
+            "title": "Pendencias"
+          },
+          "calculadoEm": {
+            "type": "string",
+            "title": "Calculadoem"
+          },
+          "proximoVencimento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximovencimento"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "contratoId",
+          "trabalhadorId",
+          "semaforo",
+          "calculadoEm"
+        ],
+        "title": "Alocacao",
+        "description": "Vínculo de trabalhador com contrato e semáforo."
+      },
+      "ArquivoMetadados": {
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "application/pdf",
+              "image/jpeg",
+              "image/png"
+            ],
+            "title": "Contenttype"
+          },
+          "tamanhoBytes": {
+            "type": "integer",
+            "maximum": 10485760.0,
+            "minimum": 1.0,
+            "title": "Tamanhobytes"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "contentType",
+          "tamanhoBytes",
+          "sha256"
+        ],
+        "title": "ArquivoMetadados",
+        "description": "Metadados de arquivo armazenado no Storage."
+      },
+      "Body_enviar_documento_trabalhadores__trabalhador_id__documentos_post": {
+        "properties": {
+          "arquivo": {
+            "type": "string",
+            "format": "binary",
+            "title": "Arquivo"
+          },
+          "tipoDocumentoId": {
+            "type": "string",
+            "title": "Tipodocumentoid"
+          },
+          "validoAte": {
+            "type": "string",
+            "title": "Validoate"
+          },
+          "dataEmissao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataemissao"
+          }
+        },
+        "type": "object",
+        "required": [
+          "arquivo",
+          "tipoDocumentoId",
+          "validoAte"
+        ],
+        "title": "Body_enviar_documento_trabalhadores__trabalhador_id__documentos_post"
+      },
+      "Contrato": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "identificador": {
+            "type": "string",
+            "title": "Identificador"
+          },
+          "terceirizadaId": {
+            "type": "string",
+            "title": "Terceirizadaid"
+          },
+          "dataInicio": {
+            "type": "string",
+            "title": "Datainicio"
+          },
+          "dataFim": {
+            "type": "string",
+            "title": "Datafim"
+          },
+          "vigente": {
+            "type": "boolean",
+            "title": "Vigente"
+          },
+          "versaoMatriz": {
+            "type": "integer",
+            "title": "Versaomatriz"
+          },
+          "exigencias": {
+            "items": {
+              "$ref": "#/components/schemas/TipoDocumento"
+            },
+            "type": "array",
+            "title": "Exigencias"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "identificador",
+          "terceirizadaId",
+          "dataInicio",
+          "dataFim",
+          "vigente",
+          "versaoMatriz",
+          "exigencias"
+        ],
+        "title": "Contrato",
+        "description": "Representação completa de um contrato com sua matriz de exigências."
+      },
+      "Documento": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "trabalhadorId": {
+            "type": "string",
+            "title": "Trabalhadorid"
+          },
+          "tipoDocumentoId": {
+            "type": "string",
+            "title": "Tipodocumentoid"
+          },
+          "validoAte": {
+            "type": "string",
+            "title": "Validoate"
+          },
+          "statusRevisao": {
+            "type": "string",
+            "enum": [
+              "PENDENTE",
+              "APROVADO",
+              "REJEITADO"
+            ],
+            "title": "Statusrevisao"
+          },
+          "enviadoEm": {
+            "type": "string",
+            "title": "Enviadoem"
+          },
+          "dataEmissao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataemissao"
+          },
+          "revisadoEm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revisadoem"
+          },
+          "motivoRejeicao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivorejeicao"
+          },
+          "situacaoValidade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Situacaovalidade"
+          },
+          "arquivo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArquivoMetadados"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "trabalhadorId",
+          "tipoDocumentoId",
+          "validoAte",
+          "statusRevisao",
+          "enviadoEm"
+        ],
+        "title": "Documento",
+        "description": "Representação de um documento comprobatório de SST."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthResponse"
+      },
+      "ListaTiposDocumento": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/TipoDocumento"
+            },
+            "type": "array",
+            "title": "Itens"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "itens"
+        ],
+        "title": "ListaTiposDocumento",
+        "description": "Listagem de tipos de documento."
+      },
+      "NovaAlocacao": {
+        "properties": {
+          "trabalhadorId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Trabalhadorid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "trabalhadorId"
+        ],
+        "title": "NovaAlocacao",
+        "description": "Payload para vincular trabalhador ao contrato."
+      },
+      "NovaTerceirizada": {
+        "properties": {
+          "razaoSocial": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 3,
+            "title": "Razaosocial"
+          },
+          "cnpj": {
+            "type": "string",
+            "title": "Cnpj",
+            "description": "CNPJ da empresa terceirizada (14 dígitos com ou sem pontuação)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "razaoSocial",
+          "cnpj"
+        ],
+        "title": "NovaTerceirizada",
+        "description": "Payload de criação de terceirizada."
+      },
+      "NovoContrato": {
+        "properties": {
+          "identificador": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Identificador"
+          },
+          "terceirizadaId": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Terceirizadaid"
+          },
+          "dataInicio": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "title": "Datainicio"
+          },
+          "dataFim": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "title": "Datafim"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "identificador",
+          "terceirizadaId",
+          "dataInicio",
+          "dataFim"
+        ],
+        "title": "NovoContrato",
+        "description": "Payload de criação de contrato."
+      },
+      "NovoTipoDocumento": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 2,
+            "title": "Nome"
+          },
+          "validadeMeses": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Validademeses"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nome",
+          "validadeMeses"
+        ],
+        "title": "NovoTipoDocumento",
+        "description": "Payload de criação de tipo de documento."
+      },
+      "NovoTrabalhador": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 3,
+            "title": "Nome"
+          },
+          "cpf": {
+            "type": "string",
+            "title": "Cpf",
+            "description": "CPF do trabalhador com 11 dígitos"
+          },
+          "terceirizadaId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terceirizadaid",
+            "description": "Obrigatório para gestor; ignorado/sobrescrito para terceirizada"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nome",
+          "cpf"
+        ],
+        "title": "NovoTrabalhador",
+        "description": "Payload de cadastro de trabalhador."
+      },
+      "Pagina_Contrato_": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/Contrato"
+            },
+            "type": "array",
+            "title": "Itens"
+          },
+          "proximoCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximocursor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "itens"
+        ],
+        "title": "Pagina[Contrato]"
+      },
+      "Pagina_Documento_": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/Documento"
+            },
+            "type": "array",
+            "title": "Itens"
+          },
+          "proximoCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximocursor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "itens"
+        ],
+        "title": "Pagina[Documento]"
+      },
+      "Pagina_Terceirizada_": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/Terceirizada"
+            },
+            "type": "array",
+            "title": "Itens"
+          },
+          "proximoCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximocursor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "itens"
+        ],
+        "title": "Pagina[Terceirizada]"
+      },
+      "Pagina_Trabalhador_": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/Trabalhador"
+            },
+            "type": "array",
+            "title": "Itens"
+          },
+          "proximoCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximocursor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "itens"
+        ],
+        "title": "Pagina[Trabalhador]"
+      },
+      "Pendencia": {
+        "properties": {
+          "tipoDocumentoId": {
+            "type": "string",
+            "title": "Tipodocumentoid"
+          },
+          "tipoNome": {
+            "type": "string",
+            "title": "Tiponome"
+          },
+          "motivo": {
+            "type": "string",
+            "title": "Motivo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "tipoDocumentoId",
+          "tipoNome",
+          "motivo"
+        ],
+        "title": "Pendencia",
+        "description": "Representação de pendência documental."
+      },
+      "ReadyResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ReadyResponse"
+      },
+      "RejeitarDocumentoPayload": {
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5,
+            "title": "Motivo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "motivo"
+        ],
+        "title": "RejeitarDocumentoPayload",
+        "description": "Payload de rejeição de documento com justificativa obrigatória."
+      },
+      "SubstituirExigencias": {
+        "properties": {
+          "tipoDocumentoIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Tipodocumentoids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "tipoDocumentoIds"
+        ],
+        "title": "SubstituirExigencias",
+        "description": "Payload para substituição da matriz de exigências do contrato."
+      },
+      "Terceirizada": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "razaoSocial": {
+            "type": "string",
+            "title": "Razaosocial"
+          },
+          "cnpj": {
+            "type": "string",
+            "title": "Cnpj"
+          },
+          "ativa": {
+            "type": "boolean",
+            "title": "Ativa"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "razaoSocial",
+          "cnpj",
+          "ativa"
+        ],
+        "title": "Terceirizada",
+        "description": "Representação de terceirizada."
+      },
+      "TipoDocumento": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "validadeMeses": {
+            "type": "integer",
+            "title": "Validademeses"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "validadeMeses"
+        ],
+        "title": "TipoDocumento",
+        "description": "Representação de tipo de documento."
+      },
+      "Trabalhador": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "terceirizadaId": {
+            "type": "string",
+            "title": "Terceirizadaid"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "cpfMascarado": {
+            "type": "string",
+            "title": "Cpfmascarado"
+          },
+          "ativo": {
+            "type": "boolean",
+            "title": "Ativo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "terceirizadaId",
+          "nome",
+          "cpfMascarado",
+          "ativo"
+        ],
+        "title": "Trabalhador",
+        "description": "Representação resumida do trabalhador."
+      },
+      "TrabalhadorDetalhe": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "terceirizadaId": {
+            "type": "string",
+            "title": "Terceirizadaid"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "cpfMascarado": {
+            "type": "string",
+            "title": "Cpfmascarado"
+          },
+          "ativo": {
+            "type": "boolean",
+            "title": "Ativo"
+          },
+          "documentos": {
+            "items": {
+              "$ref": "#/components/schemas/Documento"
+            },
+            "type": "array",
+            "title": "Documentos"
+          },
+          "alocacoes": {
+            "items": {
+              "$ref": "#/components/schemas/Alocacao"
+            },
+            "type": "array",
+            "title": "Alocacoes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "terceirizadaId",
+          "nome",
+          "cpfMascarado",
+          "ativo"
+        ],
+        "title": "TrabalhadorDetalhe",
+        "description": "Detalhes completos do trabalhador com seus documentos e alocações."
+      },
+      "UrlDownloadResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expiraEm": {
+            "type": "string",
+            "title": "Expiraem"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "url",
+          "expiraEm"
+        ],
+        "title": "UrlDownloadResponse",
+        "description": "URL assinada para download temporário do documento."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

@@ -7,14 +7,14 @@ e tentativas de injeção de `tenantId` (ADR 0002 / T-ISO-03).
 from __future__ import annotations
 
 import re
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 T = TypeVar("T")
 
 
-class Pagina[T](BaseModel):
+class Pagina(BaseModel, Generic[T]):  # noqa: UP046
     """Envelope de listagem paginada por cursor."""
 
     model_config = ConfigDict(extra="forbid")

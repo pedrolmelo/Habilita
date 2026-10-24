@@ -22,6 +22,8 @@ from habilita.trabalhadores.schemas import (
     UrlDownloadResponse,
 )
 
+UTC = getattr(datetime, "UTC", datetime.timezone.utc)  # noqa: UP017
+
 # Base determinística em memória compatível com o seed
 _BANCO_TRABALHADORES: dict[str, dict[str, dict[str, Any]]] = {
     "tnt_alfa": {
@@ -210,7 +212,7 @@ class TrabalhadoresRepositorio:
         if trb and contrato_id not in trb.get("alocacoes", []):
             trb.setdefault("alocacoes", []).append(contrato_id)
 
-        agora = datetime.datetime.now(datetime.UTC).isoformat()
+        agora = datetime.datetime.now(UTC).isoformat()
         return Alocacao(
             contratoId=contrato_id,
             trabalhadorId=trabalhador_id,
@@ -283,7 +285,7 @@ class TrabalhadoresRepositorio:
     ) -> Documento:
         docs_map = _BANCO_DOCUMENTOS.setdefault(self.tenant_id, {})
         doc_id = f"doc_{uuid.uuid4().hex[:8]}"
-        agora = datetime.datetime.now(datetime.UTC).isoformat()
+        agora = datetime.datetime.now(UTC).isoformat()
 
         registro = {
             "id": doc_id,
@@ -308,7 +310,7 @@ class TrabalhadoresRepositorio:
             return None
 
         dados["statusRevisao"] = "APROVADO"
-        dados["revisadoEm"] = datetime.datetime.now(datetime.UTC).isoformat()
+        dados["revisadoEm"] = datetime.datetime.now(UTC).isoformat()
         dados["motivoRejeicao"] = None
         return Documento(**dados)
 
@@ -319,7 +321,7 @@ class TrabalhadoresRepositorio:
             return None
 
         dados["statusRevisao"] = "REJEITADO"
-        dados["revisadoEm"] = datetime.datetime.now(datetime.UTC).isoformat()
+        dados["revisadoEm"] = datetime.datetime.now(UTC).isoformat()
         dados["motivoRejeicao"] = motivo
         return Documento(**dados)
 
@@ -330,6 +332,6 @@ class TrabalhadoresRepositorio:
         if not doc:
             return None
 
-        expira = (datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=15)).isoformat()
+        expira = (datetime.datetime.now(UTC) + datetime.timedelta(minutes=15)).isoformat()
         url = f"http://127.0.0.1:9199/download/storage/v1/b/demo-habilita.appspot.com/o/tenants%2F{self.tenant_id}%2Fdocumentos%2F{documento_id}.pdf?alt=media"
         return UrlDownloadResponse(url=url, expiraEm=expira)

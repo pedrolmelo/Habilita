@@ -1,4 +1,29 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "contratos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "terceirizadaId", "order": "ASCENDING" },
+        { "fieldPath": "vigente", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "trabalhadores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "terceirizadaId", "order": "ASCENDING" },
+        { "fieldPath": "ativo", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "documentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "statusRevisao", "order": "ASCENDING" },
+        { "fieldPath": "enviadoEm", "order": "DESCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }
