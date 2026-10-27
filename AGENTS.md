@@ -15,9 +15,9 @@ Se uma ADR **aprovada** no `habilita-docs` contradisser este arquivo, a ADR venc
 
 - Web: React + TypeScript `strict` + Vite (SPA) no Firebase Hosting.
 - API: Python 3.12 + FastAPI + Uvicorn, Pydantic v2, pydantic-settings, `uv`, Ruff, mypy estrito, import-linter, pytest.
-- Auth: Firebase Auth com custom claims `tenantId`, `papel`, `terceirizadaId`.
+- Auth: Firebase Auth com custom claims `tenantId`, `papel` (`admin_contratante` | `analista_sst` | `terceirizada` | `porteiro`, ADR 0002) e `terceirizadaId`.
 - Dados: Cloud Firestore (`tenants/{tenantId}/...`), Cloud Storage privado com URL assinada.
-- Execução: Cloud Run (`southamerica-east1`, `min-instances=0`) e Cloud Scheduler.
+- Execução: Cloud Run (`us-central1`, `min-instances=0`) e Cloud Scheduler, tudo na mesma região (ADR 0003).
 - Local: Docker Compose + Firebase Emulator Suite (Auth, Firestore, Storage).
 - CI/CD: GitHub Actions com Workload Identity Federation; imagens no Artifact Registry com tag = SHA do commit.
 
@@ -62,7 +62,7 @@ Se uma ADR **aprovada** no `habilita-docs` contradisser este arquivo, a ADR venc
 - GitHub Flow: `main` sempre implantável e protegida; nada de push direto.
 - Branch: `<tipo>/hab-<NN>-<descricao-curta>`; tipos `feat`, `fix`, `docs`, `test`, `chore`, `refactor`.
 - Commits: Conventional Commits em inglês, resumo até 72 caracteres; escopos `web`, `api`, `dominio`, `infra`, `docs`, `seed`.
-- PR: um por história, ideal até ~400 linhas, título no padrão de commit, squash merge, 1 aprovação de outra pessoa.
+- PR: um por história, ideal até ~400 linhas, título no padrão de commit, squash merge, **2 aprovações** de outras pessoas (incluindo um dono do CODEOWNERS).
 - Preencha o modelo de PR, incluindo a seção "Uso de IA".
 
 ## Regras de ouro
@@ -70,20 +70,23 @@ Se uma ADR **aprovada** no `habilita-docs` contradisser este arquivo, a ADR venc
 ### Contrato primeiro
 - A fonte do contrato da API é o `openapi.yaml` (raiz do repositório `habilita-docs`).
 - Mudar o contrato exige PR lá e referência a ele no PR daqui.
-- As ADRs 0001 a 0004 estão "Propostas" até serem aprovadas em PR.
+- As ADRs 0001 a 0004 são aprovadas em PR no `habilita-docs`; confira o status no índice de ADRs antes de contrariar uma decisão.
+- Valor diferente do Caderno ou da ficha só com linha na ADR 0010 (divergências).
 
 ### Multi-tenant e autorização
 - Todos os dados ficam sob `tenants/{tenantId}/...`.
 - Repositórios recebem o `tenantId` no construtor, vindo da claim do token.
 - **Proibido** aceitar `tenantId` ou `terceirizadaId` vindos da requisição (corpo, query, path ou header).
 - Recurso de outro tenant retorna **404**; papel não permitido na rota retorna **403**.
+- Só `admin_contratante` cria contratos e edita a matriz de exigências; `analista_sst` aprova ou rejeita documentos e **não** edita a matriz.
 - Security Rules são deny-all; o navegador nunca acessa o Firestore diretamente.
 - Consultas `collectionGroup` só no job interno.
 
 ### Validação e dados pessoais
 - Pydantic v2 com `extra="forbid"`, limites explícitos e `response_model` em toda rota.
 - Erros no formato Problem Details (RFC 9457).
-- Upload: PDF, JPG ou PNG até 10 MiB, tipo verificado pela assinatura de bytes (não pela extensão).
+- Upload: **PDF ou JPG até 5 MB (5.000.000 bytes)**, tipo verificado pela assinatura de bytes (não pela extensão); imagens comprimidas no cliente (máx. 2000 px, JPEG 0,8) e miniatura de JPG gerada na API (ADR 0006).
+- Portaria: a resposta da consulta nunca traz dado de documento (tipo, motivo, validade, semáforo ou contrato), só o resultado e uma orientação genérica (ADR 0008).
 - CPF nunca em URL (consulta da portaria é POST com CPF no corpo) e armazenado como hash HMAC.
 - Logs sem dados pessoais.
 
