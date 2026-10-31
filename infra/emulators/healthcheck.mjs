@@ -1,7 +1,7 @@
-// Healthcheck dos emuladores: sai com 0 se as 4 portas aceitam conexão TCP, com 1 se não.
+// Healthcheck dos emuladores: sai com 0 se as 3 portas aceitam conexão TCP, com 1 se não.
 import net from 'node:net'
 
-const PORTS = [9099, 8080, 9199, 4000] // Auth, Firestore, Storage, Interface
+const PORTS = [9099, 8080, 4000] // Auth, Firestore, Interface
 
 function canConnect(port) {
   return new Promise((resolve) => {

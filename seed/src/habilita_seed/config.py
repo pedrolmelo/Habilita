@@ -8,8 +8,17 @@ from urllib.parse import urlparse
 # NUNCA utilizar esta senha fora dos emuladores locais.
 SENHA_EMULADOR_PADRAO: str = "SenhaDemo123!"
 
-# Hosts locais expressamente permitidos para conexão dos emuladores.
-HOSTS_LOCAIS_PERMITIDOS: frozenset[str] = frozenset({"localhost", "127.0.0.1", "emulators"})
+# Hosts locais expressamente permitidos para conexão dos emuladores e serviços locais.
+HOSTS_LOCAIS_PERMITIDOS: frozenset[str] = frozenset(
+    {"localhost", "127.0.0.1", "emulators", "storage"}
+)
+
+# Chave local service_role padrão para desenvolvimento/testes
+SUPABASE_SERVICE_KEY_PADRAO: str = (
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+    "eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ."
+    "DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q"
+)
 
 
 class TravaEmuladorError(RuntimeError):
@@ -18,14 +27,15 @@ class TravaEmuladorError(RuntimeError):
 
 @dataclass(frozen=True)
 class SeedConfig:
-    """Configurações validadas do seed para execução contra emuladores."""
+    """Configurações validadas do seed para execução contra serviços locais."""
 
     project_id: str
     auth_emulator_host: str
     firestore_emulator_host: str
-    storage_emulator_host: str
-    storage_bucket: str
-    cpf_hmac_key: str
+    storage_url: str
+    storage_service_key: str
+    storage_bucket: str = "documentos"
+    cpf_hmac_key: str = "demo-cpf-hmac-key-for-emulator-only"
     senha_padrao: str = SENHA_EMULADOR_PADRAO
 
 
@@ -47,8 +57,8 @@ def validar_trava_emulador() -> SeedConfig:
     """Abre ou aborta a execução do seed verificando rigorosamente o ambiente.
 
     O seed aborta antes de qualquer escrita se:
-    (a) As variáveis dos emuladores de Auth, Firestore e Storage não estiverem definidas;
-    (b) O host não for local (localhost, 127.0.0.1 ou o nome do serviço do Compose: 'emulators');
+    (a) As variáveis dos emuladores de Auth, Firestore e Supabase Storage não estiverem definidas;
+    (b) O host não for local (localhost, 127.0.0.1 ou os serviços do Compose: 'emulators', 'storage');
     (c) O ID do projeto não começar com o prefixo obrigatório 'demo-';
     (d) GOOGLE_APPLICATION_CREDENTIALS estiver definida (impede uso acidental de credenciais reais).
     """
@@ -75,16 +85,12 @@ def validar_trava_emulador() -> SeedConfig:
             "O seed só pode rodar conectado ao emulador de Firestore local."
         )
 
-    storage_host = (
-        os.environ.get("FIREBASE_STORAGE_EMULATOR_HOST", "").strip()
+    # Supabase Storage URL
+    storage_url = (
+        os.environ.get("STORAGE_URL", "").strip()
         or os.environ.get("STORAGE_EMULATOR_HOST", "").strip()
+        or "http://storage:5000"
     )
-    if not storage_host:
-        raise TravaEmuladorError(
-            "TRAVA DE SEGURANÇA: Nenhuma variável de emulador de Storage "
-            "(FIREBASE_STORAGE_EMULATOR_HOST ou STORAGE_EMULATOR_HOST) está definida. "
-            "O seed só pode rodar conectado ao emulador de Cloud Storage local."
-        )
 
     # (b) Validação de hosts locais
     auth_hostname = _extrair_host(auth_host)
@@ -101,7 +107,7 @@ def validar_trava_emulador() -> SeedConfig:
             f"Permitidos apenas: {sorted(HOSTS_LOCAIS_PERMITIDOS)}."
         )
 
-    storage_hostname = _extrair_host(storage_host)
+    storage_hostname = _extrair_host(storage_url)
     if storage_hostname not in HOSTS_LOCAIS_PERMITIDOS:
         raise TravaEmuladorError(
             f"TRAVA DE SEGURANÇA: Host do Storage inválido: '{storage_hostname}'. "
@@ -109,12 +115,7 @@ def validar_trava_emulador() -> SeedConfig:
         )
 
     # (c) Prefixo do ID do projeto
-    project_id = (
-        os.environ.get("FIREBASE_PROJECT_ID", "").strip()
-        or os.environ.get("GCLOUD_PROJECT", "").strip()
-    )
-    if not project_id:
-        project_id = "demo-habilita"
+    project_id = os.environ.get("FIREBASE_PROJECT_ID", "").strip() or "demo-habilita"
 
     if not project_id.startswith("demo-"):
         raise TravaEmuladorError(
@@ -122,33 +123,29 @@ def validar_trava_emulador() -> SeedConfig:
             "Emuladores do Firebase exigem o prefixo 'demo-' para operar sem autenticação de nuvem."
         )
 
-    env_bucket = os.environ.get("STORAGE_BUCKET_NAME", "").strip()
-    storage_bucket = env_bucket or f"{project_id}.appspot.com"
+    storage_bucket = (
+        os.environ.get("STORAGE_BUCKET", "").strip()
+        or os.environ.get("STORAGE_BUCKET_NAME", "").strip()
+        or "documentos"
+    )
+
+    storage_service_key = (
+        os.environ.get("STORAGE_SERVICE_KEY", "").strip()
+        or os.environ.get("SUPABASE_SERVICE_KEY", "").strip()
+        or SUPABASE_SERVICE_KEY_PADRAO
+    )
 
     # Chave de HMAC do CPF: valor padrão de desenvolvimento se não fornecido.
-    # Em produção, a chave deve vir do Google Cloud Secret Manager conforme ADR 0008.
+    # Em produção, a chave deve vir de variáveis de ambiente protegidas (GitHub Secrets e variáveis do Render).
     env_hmac_key = os.environ.get("CPF_HMAC_KEY", "").strip()
     cpf_hmac_key = env_hmac_key or "demo-cpf-hmac-key-for-emulator-only"
-
-    # Normalizar ambas as variáveis de Storage no os.environ para que tanto o Firebase Admin SDK
-    # quanto o google-cloud-storage funcionem sem atrito
-    if "://" not in storage_host:
-        os.environ["FIREBASE_STORAGE_EMULATOR_HOST"] = storage_host
-        os.environ["STORAGE_EMULATOR_HOST"] = f"http://{storage_host}"
-    else:
-        os.environ["STORAGE_EMULATOR_HOST"] = storage_host
-        parsed_storage = urlparse(storage_host)
-        os.environ["FIREBASE_STORAGE_EMULATOR_HOST"] = (
-            f"{parsed_storage.hostname}:{parsed_storage.port}"
-            if parsed_storage.port
-            else parsed_storage.hostname or ""
-        )
 
     return SeedConfig(
         project_id=project_id,
         auth_emulator_host=auth_host,
         firestore_emulator_host=firestore_host,
-        storage_emulator_host=storage_host,
+        storage_url=storage_url,
+        storage_service_key=storage_service_key,
         storage_bucket=storage_bucket,
         cpf_hmac_key=cpf_hmac_key,
     )
