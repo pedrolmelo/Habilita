@@ -3,8 +3,9 @@
 Imagem Docker dos emuladores locais do Firebase:
 - **Auth:** porta `9099`
 - **Cloud Firestore:** porta `8080`
-- **Cloud Storage:** porta `9199`
 - **Interface Web (Emulator UI):** porta `4000`
+
+> **Nota sobre o Storage:** Conforme o Plano Custo Zero, o armazenamento de arquivos é provido localmente pelo contêiner do **Supabase Storage** (porta `5000`), dispensando o emulador de Cloud Storage do Firebase.
 
 ## Características técnicas
 
@@ -33,5 +34,5 @@ Caso prefira rodar diretamente na máquina hospedeira:
    ```
 3. Na raiz do repositório:
    ```bash
-   firebase emulators:start --only auth,firestore,storage --project demo-habilita
+   firebase emulators:start --only auth,firestore --project demo-habilita
    ```

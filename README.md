@@ -99,7 +99,35 @@ Todas as portas são publicadas exclusivamente em `127.0.0.1` (loopback) para se
 | **Emuladores UI** | [http://localhost:4000](http://localhost:4000) | Painel visual do Firebase Emulator Suite |
 | **Auth Emulator** | `localhost:9099` | Emulador do Firebase Auth |
 | **Firestore Emulator** | `localhost:8080` | Emulador do Cloud Firestore |
-| **Storage Emulator** | `localhost:9199` | Emulador do Cloud Storage |
+| **Supabase Storage** | [http://localhost:5000](http://localhost:5000) | API REST do Supabase Storage (`/status` para healthcheck) |
+
+### Como inspecionar o Supabase Storage localmente
+
+O Supabase Storage sobe com o bucket privado `documentos` inicializado automaticamente. Você pode listar e inspecionar os objetos enviados pelo seed ou pela API utilizando a `SUPABASE_SERVICE_KEY` local:
+
+```bash
+# Definir a chave de serviço local de desenvolvimento:
+KEY=$(grep SUPABASE_SERVICE_KEY .env.example | cut -d= -f2 | tr -d '"')
+
+# Verificar a saúde do Storage:
+curl -s http://127.0.0.1:5000/status
+
+# Consultar metadados do bucket 'documentos':
+curl -s -H "Authorization: Bearer $KEY" http://127.0.0.1:5000/bucket/documentos
+
+# Listar objetos armazenados no bucket:
+curl -s -X POST -H "Authorization: Bearer $KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"prefix": "", "limit": 100}' \
+  http://127.0.0.1:5000/object/list/documentos
+```
+
+### Limpar todo o ambiente local
+
+Para resetar bancos de dados, emuladores e arquivos armazenados no Supabase Storage:
+```bash
+docker compose down -v
+```
 
 ### Problemas comuns
 
@@ -110,7 +138,7 @@ Todas as portas são publicadas exclusivamente em `127.0.0.1` (loopback) para se
 - **Consumo de memória:**
   Verifique o uso de memória a qualquer momento com `docker stats --no-stream`. O consumo ocioso total de todos os serviços combinados fica em torno de ~500 MB. Os processos Java dos emuladores já possuem teto configurado com `-Xmx512m`.
 - **Emuladores lentos na primeira subida:**
-  Na primeira inicialização, a JVM do Firestore e Storage pode levar até ~30 segundos para carregar. O `docker-compose.yml` já conta com `start_period` tolerante nos healthchecks.
+  Na primeira inicialização, a JVM do Firestore pode levar até ~30 segundos para carregar. O `docker-compose.yml` já conta com `start_period` tolerante nos healthchecks.
 - **Como reconstruir imagens após alterar dependências:**
   Se alterar `pyproject.toml`, `uv.lock`, `package.json` ou `package-lock.json`, reconstrua os contêineres com:
   ```bash
