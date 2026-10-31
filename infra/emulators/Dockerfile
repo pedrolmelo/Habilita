@@ -39,11 +39,10 @@ USER node
 # Baixa agora os executáveis dos emuladores (ficam no cache do usuário), para o contêiner
 # não precisar de internet ao subir.
 RUN firebase setup:emulators:firestore \
-    && firebase setup:emulators:storage \
     && firebase setup:emulators:ui
 
-# Auth 9099 | Firestore 8080 | Storage 9199 | Interface 4000
-EXPOSE 9099 8080 9199 4000
+# Auth 9099 | Firestore 8080 | Interface 4000
+EXPOSE 9099 8080 4000
 
 # Sem --import/--export: os dados NÃO persistem entre execuções (o seed recria tudo).
-CMD ["firebase", "emulators:start", "--only", "auth,firestore,storage", "--project", "demo-habilita"]
+CMD ["firebase", "emulators:start", "--only", "auth,firestore", "--project", "demo-habilita"]

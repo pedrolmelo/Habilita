@@ -1,15 +1,16 @@
-"""Integração com os emuladores Firebase (Auth, Firestore e Cloud Storage)."""
+"""Integração com os emuladores Firebase (Auth e Firestore) e Supabase Storage."""
 
 import hashlib
 import json
 import logging
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, timedelta
 
 import firebase_admin
 import google.auth.credentials
-from firebase_admin import auth, credentials, firestore, storage
+from firebase_admin import auth, credentials, firestore
 from google.cloud.firestore import Client as FirestoreClient
 
 from habilita_seed.config import SeedConfig
@@ -39,14 +40,13 @@ def obter_firebase_app(config: SeedConfig) -> firebase_admin.App:
             credential=EmulatorCredentials(),
             options={
                 "projectId": config.project_id,
-                "storageBucket": config.storage_bucket,
             },
         )
 
 
 def resetar_emuladores(config: SeedConfig) -> None:
     """Limpa determinística e completamente os dados de Auth, Firestore e Storage."""
-    logger.info("Iniciando reset dos emuladores locais...")
+    logger.info("Iniciando reset dos serviços locais...")
 
     # 1. Reset do Auth Emulator via API REST oficial do emulador
     auth_url = (
@@ -77,16 +77,23 @@ def resetar_emuladores(config: SeedConfig) -> None:
     except Exception as exc:
         logger.warning("Falha ao resetar emulador de Firestore via REST: %s", exc)
 
-    # 3. Reset do Storage Emulator
+    # 3. Reset do Supabase Storage via API REST (esvaziar bucket)
     try:
-        app = obter_firebase_app(config)
-        bucket = storage.bucket(config.storage_bucket, app=app)
-        blobs = list(bucket.list_blobs())
-        for blob in blobs:
-            blob.delete()
-        logger.info("Emulador de Storage limpo com sucesso (%d arquivos removidos).", len(blobs))
+        url = f"{config.storage_url.rstrip('/')}/bucket/{config.storage_bucket}/empty"
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {config.storage_service_key}"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req) as resp:  # noqa: S310
+            if resp.status in (200, 201):
+                logger.info(
+                    "Bucket de Storage ('%s') esvaziado com sucesso.", config.storage_bucket
+                )
+            else:
+                logger.warning("Resposta inesperada ao esvaziar bucket: HTTP %s", resp.status)
     except Exception as exc:
-        logger.warning("Falha ao resetar emulador de Storage via SDK: %s", exc)
+        logger.warning("Falha ao esvaziar bucket do Supabase Storage via REST: %s", exc)
 
 
 def popular_usuarios(config: SeedConfig, tenants: list[TenantSeed]) -> int:
@@ -121,6 +128,48 @@ def popular_usuarios(config: SeedConfig, tenants: list[TenantSeed]) -> int:
     return total
 
 
+def enviar_arquivo_supabase(
+    config: SeedConfig,
+    caminho: str,
+    conteudo: bytes,
+    content_type: str = "application/pdf",
+) -> None:
+    """Envia um arquivo para o Supabase Storage via API REST usando a chave de serviço.
+
+    Utiliza o cabeçalho 'x-upsert: true' para garantir idempotência estrita:
+    se o arquivo já existir no bucket, ele é sobrescrito sem falhar.
+    """
+    url = f"{config.storage_url.rstrip('/')}/object/{config.storage_bucket}/{caminho}"
+    req = urllib.request.Request(
+        url,
+        data=conteudo,
+        headers={
+            "Authorization": f"Bearer {config.storage_service_key}",
+            "Content-Type": content_type,
+            "x-upsert": "true",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req) as resp:  # noqa: S310
+        if resp.status not in (200, 201):
+            raise RuntimeError(
+                f"Falha ao enviar arquivo para o Supabase Storage (HTTP {resp.status})"
+            )
+
+
+def baixar_objeto_supabase(config: SeedConfig, caminho: str) -> tuple[bytes, str]:
+    """Baixa o conteúdo e o Content-Type do objeto do Supabase Storage via REST."""
+    url = f"{config.storage_url.rstrip('/')}/object/authenticated/{config.storage_bucket}/{caminho}"
+    req = urllib.request.Request(
+        url,
+        headers={"Authorization": f"Bearer {config.storage_service_key}"},
+        method="GET",
+    )
+    with urllib.request.urlopen(req) as resp:  # noqa: S310
+        content_type = resp.headers.get("Content-Type", "")
+        return resp.read(), content_type  # type: ignore[no-any-return]
+
+
 def popular_firestore_e_storage(
     config: SeedConfig,
     tenants: list[TenantSeed],
@@ -129,7 +178,6 @@ def popular_firestore_e_storage(
     """Grava as coleções no Firestore e envia os arquivos binários ao Storage."""
     app = obter_firebase_app(config)
     db: FirestoreClient = firestore.client(app=app)
-    bucket = storage.bucket(config.storage_bucket, app=app)
 
     contagens: dict[str, int] = {
         "tenants": 0,
@@ -235,7 +283,7 @@ def popular_firestore_e_storage(
             indice_ref.set({"trabalhadorId": trb.id})
             contagens["indices_cpf"] += 1
 
-            # Documentos do trabalhador
+            # Documentos do trabalhador (3 documentos por trabalhador: ASO, NR-35, NR-10)
             for doc in trb.documentos:
                 tipo_obj = tipos_map[doc.tipo_documento_id]
                 dt_valido = data_referencia + timedelta(days=doc.offset_valido_ate_dias)
@@ -248,14 +296,18 @@ def popular_firestore_e_storage(
                 )
                 pdf_sha256 = calcular_sha256(pdf_bytes)
 
-                # Upload binário para o Cloud Storage emulator
+                # Upload binário para o Supabase Storage
                 file_uuid = derivar_uuid_arquivo(tenant.id, trb.id, doc.id)
                 storage_path = (
                     f"tenants/{tenant.id}/trabalhadores/{trb.id}/"
                     f"documentos/{doc.id}/{file_uuid}.pdf"
                 )
-                blob = bucket.blob(storage_path)
-                blob.upload_from_string(pdf_bytes, content_type="application/pdf")
+                enviar_arquivo_supabase(
+                    config=config,
+                    caminho=storage_path,
+                    conteudo=pdf_bytes,
+                    content_type="application/pdf",
+                )
                 contagens["storage_objetos"] += 1
 
                 # Gravação dos metadados no Firestore
@@ -362,28 +414,13 @@ def calcular_checksum_firestore(config: SeedConfig) -> str:
     return hasher.hexdigest()
 
 
-def baixar_bytes_blob(config: SeedConfig, caminho: str) -> bytes:
-    """Baixa o conteúdo binário do blob diretamente do emulador de Storage.
-
-    O emulador do Storage retorna media_link com 127.0.0.1 hardcoded nos metadados,
-    o que falha na rede Docker (onde o host é 'emulators'). Por isso, consultamos
-    o endpoint direto usando o host configurado do emulador.
-    """
-    safe_path = urllib.parse.quote(caminho, safe="")
-    host = config.storage_emulator_host
-    base_url = host if "://" in host else f"http://{host}"
-    url = f"{base_url}/download/storage/v1/b/{config.storage_bucket}/o/{safe_path}?alt=media"
-    req = urllib.request.Request(url)  # noqa: S310
-    with urllib.request.urlopen(req) as resp:  # noqa: S310
-        return resp.read()  # type: ignore[no-any-return]
-
-
-def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bool, list[str], str]:
+def verificar_integridade(
+    config: SeedConfig, data_referencia: date
+) -> tuple[bool, list[str], str]:
     """Verifica contagens, integridade de isolamento, regras e calcula o checksum."""
     erros: list[str] = []
     app = obter_firebase_app(config)
     db: FirestoreClient = firestore.client(app=app)
-    bucket = storage.bucket(config.storage_bucket, app=app)
 
     # 1. Checagem de Usuários e Claims no Auth
     usuarios_esperados = {
@@ -419,13 +456,15 @@ def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bo
             claims = user_record.custom_claims or {}
             for k, v in claims_esperadas.items():
                 if claims.get(k) != v:
-                    erros.append(f"Usuário {uid}: claim '{k}' = '{claims.get(k)}', esperado '{v}'.")
+                    erros.append(
+                        f"Usuário {uid}: claim '{k}' = '{claims.get(k)}', esperado '{v}'."
+                    )
             if claims.get("papel") != "terceirizada" and "terceirizadaId" in claims:
                 erros.append(f"Usuário {uid}: não é terceirizada mas possui 'terceirizadaId'.")
         except Exception as exc:
             erros.append(f"Falha ao ler usuário Auth {uid}: {exc}")
 
-    # 2. Checagem de documentos no Firestore e arquivos no Storage
+    # 2. Checagem de documentos no Firestore e arquivos no Supabase Storage
     tenants = ["tnt_alfa", "tnt_beta"]
 
     cpfs_alfa: set[str] = set()
@@ -449,26 +488,29 @@ def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bo
                         f"Vazamento de isolamento no caminho do documento {d.id}: '{caminho}'."
                     )
 
-                # Conferir integridade no Storage
-                blob = bucket.get_blob(caminho)
-                if not blob:
-                    erros.append(f"Arquivo não encontrado no Storage: '{caminho}'.")
-                else:
-                    if blob.content_type != "application/pdf":
+                # Conferir integridade no Supabase Storage
+                try:
+                    conteudo, ctype = baixar_objeto_supabase(config, caminho)
+                    if "application/pdf" not in ctype:
                         erros.append(
-                            f"Arquivo '{caminho}' possui contentType '{blob.content_type}', "
+                            f"Arquivo '{caminho}' possui contentType '{ctype}', "
                             "esperado 'application/pdf'."
                         )
-                    try:
-                        conteudo = baixar_bytes_blob(config, caminho)
-                        sha_real = hashlib.sha256(conteudo).hexdigest()
-                        if sha_real != arq.get("sha256"):
-                            erros.append(
-                                f"Hash divergente no documento {d.id}: real '{sha_real}' "
-                                f"!= armazenado '{arq.get('sha256')}'."
-                            )
-                    except Exception as exc:
-                        erros.append(f"Falha ao baixar blob '{caminho}': {exc}")
+                    sha_real = hashlib.sha256(conteudo).hexdigest()
+                    if sha_real != arq.get("sha256"):
+                        erros.append(
+                            f"Hash divergente no documento {d.id}: real '{sha_real}' "
+                            f"!= armazenado '{arq.get('sha256')}'."
+                        )
+                except urllib.error.HTTPError as exc:
+                    if exc.code == 404:
+                        erros.append(f"Arquivo não encontrado no Storage: '{caminho}'.")
+                    else:
+                        erros.append(
+                            f"Erro ao baixar blob '{caminho}': HTTP {exc.code}"
+                        )
+                except Exception as exc:
+                    erros.append(f"Falha ao baixar blob '{caminho}': {exc}")
 
         # Checar alocações e semáforo
         contratos = list(t_ref.collection("contratos").stream())
@@ -488,14 +530,17 @@ def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bo
         for ind in indices:
             if t_id == "tnt_alfa":
                 cpfs_alfa.add(ind.id)
-            else:
+            elif t_id == "tnt_beta":
                 cpfs_beta.add(ind.id)
 
-    # Verificação de CPFs duplicados entre tenants (T-ISO-04)
-    intersecao = cpfs_alfa.intersection(cpfs_beta)
-    if intersecao:
-        erros.append(f"CPFs compartilhados entre tenants detectados: {intersecao}.")
+    # 3. Isolamento estrito entre tenants
+    intersecao_cpfs = cpfs_alfa.intersection(cpfs_beta)
+    if intersecao_cpfs:
+        erros.append(
+            f"Vazamento de isolamento de CPFs entre Alfa e Beta: {intersecao_cpfs}."
+        )
 
+    # 4. Cálculo do Checksum Canônico do Firestore
     checksum = calcular_checksum_firestore(config)
-    ok = len(erros) == 0
-    return ok, erros, checksum
+
+    return (len(erros) == 0, erros, checksum)
