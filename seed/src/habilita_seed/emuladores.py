@@ -80,7 +80,7 @@ def resetar_emuladores(config: SeedConfig) -> None:
     # 3. Reset do Supabase Storage via API REST (esvaziar bucket)
     try:
         url = f"{config.storage_url.rstrip('/')}/bucket/{config.storage_bucket}/empty"
-        req = urllib.request.Request(
+        req = urllib.request.Request(  # noqa: S310
             url,
             headers={"Authorization": f"Bearer {config.storage_service_key}"},
             method="POST",
@@ -140,7 +140,7 @@ def enviar_arquivo_supabase(
     se o arquivo já existir no bucket, ele é sobrescrito sem falhar.
     """
     url = f"{config.storage_url.rstrip('/')}/object/{config.storage_bucket}/{caminho}"
-    req = urllib.request.Request(
+    req = urllib.request.Request(  # noqa: S310
         url,
         data=conteudo,
         headers={
@@ -160,7 +160,7 @@ def enviar_arquivo_supabase(
 def baixar_objeto_supabase(config: SeedConfig, caminho: str) -> tuple[bytes, str]:
     """Baixa o conteúdo e o Content-Type do objeto do Supabase Storage via REST."""
     url = f"{config.storage_url.rstrip('/')}/object/authenticated/{config.storage_bucket}/{caminho}"
-    req = urllib.request.Request(
+    req = urllib.request.Request(  # noqa: S310
         url,
         headers={"Authorization": f"Bearer {config.storage_service_key}"},
         method="GET",
@@ -414,9 +414,7 @@ def calcular_checksum_firestore(config: SeedConfig) -> str:
     return hasher.hexdigest()
 
 
-def verificar_integridade(
-    config: SeedConfig, data_referencia: date
-) -> tuple[bool, list[str], str]:
+def verificar_integridade(config: SeedConfig, data_referencia: date) -> tuple[bool, list[str], str]:
     """Verifica contagens, integridade de isolamento, regras e calcula o checksum."""
     erros: list[str] = []
     app = obter_firebase_app(config)
@@ -456,9 +454,7 @@ def verificar_integridade(
             claims = user_record.custom_claims or {}
             for k, v in claims_esperadas.items():
                 if claims.get(k) != v:
-                    erros.append(
-                        f"Usuário {uid}: claim '{k}' = '{claims.get(k)}', esperado '{v}'."
-                    )
+                    erros.append(f"Usuário {uid}: claim '{k}' = '{claims.get(k)}', esperado '{v}'.")
             if claims.get("papel") != "terceirizada" and "terceirizadaId" in claims:
                 erros.append(f"Usuário {uid}: não é terceirizada mas possui 'terceirizadaId'.")
         except Exception as exc:
@@ -506,9 +502,7 @@ def verificar_integridade(
                     if exc.code == 404:
                         erros.append(f"Arquivo não encontrado no Storage: '{caminho}'.")
                     else:
-                        erros.append(
-                            f"Erro ao baixar blob '{caminho}': HTTP {exc.code}"
-                        )
+                        erros.append(f"Erro ao baixar blob '{caminho}': HTTP {exc.code}")
                 except Exception as exc:
                     erros.append(f"Falha ao baixar blob '{caminho}': {exc}")
 
@@ -536,9 +530,7 @@ def verificar_integridade(
     # 3. Isolamento estrito entre tenants
     intersecao_cpfs = cpfs_alfa.intersection(cpfs_beta)
     if intersecao_cpfs:
-        erros.append(
-            f"Vazamento de isolamento de CPFs entre Alfa e Beta: {intersecao_cpfs}."
-        )
+        erros.append(f"Vazamento de isolamento de CPFs entre Alfa e Beta: {intersecao_cpfs}.")
 
     # 4. Cálculo do Checksum Canônico do Firestore
     checksum = calcular_checksum_firestore(config)
