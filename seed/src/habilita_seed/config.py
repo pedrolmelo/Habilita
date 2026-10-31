@@ -16,7 +16,8 @@ HOSTS_LOCAIS_PERMITIDOS: frozenset[str] = frozenset(
 # Chave local service_role padrão para desenvolvimento/testes
 SUPABASE_SERVICE_KEY_PADRAO: str = (
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
-    "eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ."
+    "eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwK"
+    "ICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ."
     "DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q"
 )
 
@@ -58,7 +59,8 @@ def validar_trava_emulador() -> SeedConfig:
 
     O seed aborta antes de qualquer escrita se:
     (a) As variáveis dos emuladores de Auth, Firestore e Supabase Storage não estiverem definidas;
-    (b) O host não for local (localhost, 127.0.0.1 ou os serviços do Compose: 'emulators', 'storage');
+    (b) O host não for local (localhost, 127.0.0.1 ou os serviços do Compose:
+        'emulators', 'storage');
     (c) O ID do projeto não começar com o prefixo obrigatório 'demo-';
     (d) GOOGLE_APPLICATION_CREDENTIALS estiver definida (impede uso acidental de credenciais reais).
     """
@@ -120,7 +122,8 @@ def validar_trava_emulador() -> SeedConfig:
     if not project_id.startswith("demo-"):
         raise TravaEmuladorError(
             f"TRAVA DE SEGURANÇA: O ID do projeto '{project_id}' não começa com 'demo-'. "
-            "Emuladores do Firebase exigem o prefixo 'demo-' para operar sem autenticação de nuvem."
+            "Emuladores do Firebase exigem o prefixo 'demo-' para operar "
+            "sem autenticação de nuvem."
         )
 
     storage_bucket = (
@@ -136,7 +139,8 @@ def validar_trava_emulador() -> SeedConfig:
     )
 
     # Chave de HMAC do CPF: valor padrão de desenvolvimento se não fornecido.
-    # Em produção, a chave deve vir de variáveis de ambiente protegidas (GitHub Secrets e variáveis do Render).
+    # Em produção, a chave deve vir de variáveis de ambiente protegidas
+    # (GitHub Secrets e variáveis do Render).
     env_hmac_key = os.environ.get("CPF_HMAC_KEY", "").strip()
     cpf_hmac_key = env_hmac_key or "demo-cpf-hmac-key-for-emulator-only"
 
