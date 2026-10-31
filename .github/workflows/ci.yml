@@ -261,6 +261,24 @@ jobs:
           echo "==> Testando interface web dos emuladores (GET http://127.0.0.1:4000)..."
           curl -sS -f -I http://127.0.0.1:4000 > /dev/null
 
+          echo "==> Testando Storage do Supabase (GET http://127.0.0.1:5000/status)..."
+          storage_res=$(curl -sS -f http://127.0.0.1:5000/status)
+          echo "Resposta do Storage: $storage_res"
+          echo "$storage_res" | grep -q '"status":"ok"'
+
+          echo "==> Verificando que o bucket 'documentos' existe no Storage..."
+          storage_key="${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q}"
+          bucket_res=$(curl -sS -f -H "Authorization: Bearer $storage_key" http://127.0.0.1:5000/bucket/documentos)
+          echo "Bucket documentos: $bucket_res"
+          echo "$bucket_res" | grep -q '"name":"documentos"'
+
+          echo "==> Validando que acesso não autenticado ao bucket privado é negado..."
+          unauth_code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/bucket/documentos)
+          if [ "$unauth_code" != "400" ] && [ "$unauth_code" != "401" ] && [ "$unauth_code" != "403" ] && [ "$unauth_code" != "404" ]; then
+            echo "ERRO: Esperado código de negação (400/401/403/404), obtido $unauth_code"
+            exit 1
+          fi
+
       - name: Popular dados com seed e verificar idempotência
         run: |
           set -euo pipefail

@@ -1,6 +1,6 @@
 # Seed de Demonstração e Testes (Habilita)
 
-Este diretório contém a ferramenta determinística de inicialização e população de dados de demonstração e teste para o **Habilita** contra o **Firebase Emulator Suite** (Auth, Firestore e Cloud Storage).
+Este diretório contém a ferramenta determinística de inicialização e população de dados de demonstração e teste para o **Habilita** contra os emuladores do **Firebase** (Auth e Firestore) e o **Supabase Storage local**.
 
 > [!WARNING]
 > **O seed só roda contra emuladores locais.**
@@ -28,7 +28,7 @@ docker compose --profile seed run --rm seed
 ### Flags da Linha de Comando (CLI)
 
 - `--hoje YYYY-MM-DD`: Define a data de referência para cálculo das vigências de contratos e validades de documentos de SST. Todas as datas declarativas são geradas a partir de deslocamentos em dias em relação a essa data. Padrão: `2026-10-20`.
-- `--reset` / `--no-reset`: Limpa completamente o Auth, o Firestore e o bucket do Cloud Storage antes da gravação. Padrão: `--reset` (ligado).
+- `--reset` / `--no-reset`: Limpa completamente o Auth, o Firestore e o bucket `documentos` do Supabase Storage antes da gravação. Padrão: `--reset` (ligado).
 - `--verificar`: Executa em modo somente leitura (sem nenhuma escrita). Valida contagens, regras de isolamento e integridade dos arquivos binários no Storage, imprimindo o checksum canônico do Firestore.
 
 Exemplos:
