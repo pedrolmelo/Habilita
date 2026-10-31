@@ -59,6 +59,9 @@ plugins = ["pydantic.mypy"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "-ra --strict-markers"
+markers = [
+    "integration: testes de integração que dependem de contêineres ou serviços externos",
+]
 
 # ---------------------------------------------------------------------
 # import-linter: protege a arquitetura (dominio puro)
