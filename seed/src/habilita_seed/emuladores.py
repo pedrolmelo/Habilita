@@ -167,7 +167,7 @@ def baixar_objeto_supabase(config: SeedConfig, caminho: str) -> tuple[bytes, str
     )
     with urllib.request.urlopen(req) as resp:  # noqa: S310
         content_type = resp.headers.get("Content-Type", "")
-        return resp.read(), content_type  # type: ignore[no-any-return]
+        return resp.read(), content_type
 
 
 def popular_firestore_e_storage(
