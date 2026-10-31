@@ -21,8 +21,14 @@ function HealthBlock() {
 
     async function check(): Promise<void> {
       try {
-        // /api/healthz passa pelo proxy do Vite e chega em GET /healthz da API.
-        const response = await fetch('/api/healthz', { signal: controller.signal })
+        // Se VITE_API_URL estiver definida (produção/Render), consome diretamente a API.
+        // Se vazia ou não definida (ambiente local), mantém a chamada relativa '/api'
+        // que passa pelo proxy do Vite e chega em GET /healthz da API.
+        const apiBaseUrl = import.meta.env.VITE_API_URL
+          ? String(import.meta.env.VITE_API_URL).replace(/\/$/, '')
+          : ''
+        const url = apiBaseUrl ? `${apiBaseUrl}/healthz` : '/api/healthz'
+        const response = await fetch(url, { signal: controller.signal })
         if (!response.ok) {
           setState({ kind: 'error', message: `A API respondeu com HTTP ${response.status}` })
           return
