@@ -32,6 +32,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReadyResponse'
+  /me:
+    get:
+      tags:
+      - Sessão
+      summary: Obter Perfil
+      description: Perfil do usuário autenticado extraído com base nas custom claims.
+      operationId: obterPerfil
+      parameters:
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorization
+      - name: x-simulated-tenant-id
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Simulated-Tenant-Id
+      - name: x-simulated-papel
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Simulated-Papel
+      - name: x-simulated-terceirizada-id
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Simulated-Terceirizada-Id
+      - name: x-simulated-uid
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Simulated-Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /terceirizadas:
     get:
       tags:
@@ -1695,6 +1756,30 @@ components:
       - motivo
       title: Pendencia
       description: Representação de pendência documental.
+    PerfilResponse:
+      properties:
+        uid:
+          type: string
+          title: Uid
+        tenantId:
+          type: string
+          title: Tenantid
+        papel:
+          type: string
+          title: Papel
+        terceirizadaId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Terceirizadaid
+      additionalProperties: false
+      type: object
+      required:
+      - uid
+      - tenantId
+      - papel
+      title: PerfilResponse
+      description: Perfil do usuário autenticado extraído das claims do token.
     ReadyResponse:
       properties:
         status:

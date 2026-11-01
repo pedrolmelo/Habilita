@@ -135,4 +135,3 @@ class UrlDownloadResponse(BaseModel):
 
     url: str
     expiraEm: str
-
