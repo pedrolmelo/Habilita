@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import datetime
 import hashlib
+import hmac
+import re
 import uuid
 from typing import Any
 
@@ -24,7 +26,9 @@ from habilita.trabalhadores.schemas import (
 
 UTC = getattr(datetime, "UTC", datetime.timezone.utc)  # noqa: UP017
 
-# Base determinística em memória compatível com o seed
+# Base determinística em memória compatível com o seed (CPF armazenado apenas como HMAC-SHA256)
+CHAVE_HMAC_CPF: bytes = b"demo-cpf-hmac-key-for-emulator-only"
+
 _BANCO_TRABALHADORES: dict[str, dict[str, dict[str, Any]]] = {
     "tnt_alfa": {
         "trb_alfa_1": {
@@ -32,7 +36,7 @@ _BANCO_TRABALHADORES: dict[str, dict[str, dict[str, Any]]] = {
             "terceirizadaId": "ter_alfa_1",
             "nome": "Carlos Eduardo Silva",
             "cpfMascarado": "***.000.001-**",
-            "cpf": "10100000126",
+            "cpfHash": "255ec8cc69a7437e703380b44b82e2dabbb25060b2dec5114ae4e0a2e3a1417a",
             "ativo": True,
             "alocacoes": ["ctr_alfa_1"],
         },
@@ -41,7 +45,7 @@ _BANCO_TRABALHADORES: dict[str, dict[str, dict[str, Any]]] = {
             "terceirizadaId": "ter_alfa_2",
             "nome": "Yuri Ramos",
             "cpfMascarado": "***.000.002-**",
-            "cpf": "10100000207",
+            "cpfHash": "100c1b2626b88b40c2e4bccdadada5e8cb7c74054ecbda887c4c7eb26359f8cc",
             "ativo": True,
             "alocacoes": [],
         },
@@ -52,7 +56,7 @@ _BANCO_TRABALHADORES: dict[str, dict[str, dict[str, Any]]] = {
             "terceirizadaId": "ter_beta_1",
             "nome": "Alexandre Pires Barbosa",
             "cpfMascarado": "***.000.001-**",
-            "cpf": "20200000160",
+            "cpfHash": "4d564a58e9d608d7b4922a550b9ae2371a21dd7e6f883f3b3c290849de02b526",
             "ativo": True,
             "alocacoes": ["ctr_beta_1"],
         }
@@ -185,14 +189,15 @@ class TrabalhadoresRepositorio:
     def criar_trabalhador(self, nome: str, cpf: str, terceirizada_id: str) -> Trabalhador:
         tenant_map = _BANCO_TRABALHADORES.setdefault(self.tenant_id, {})
         trb_id = f"trb_{uuid.uuid4().hex[:8]}"
-        cpf_limpo = cpf.replace(".", "").replace("-", "")
+        cpf_limpo = re.sub(r"\D", "", cpf)
         cpf_mascarado = f"***.{cpf_limpo[3:6]}.{cpf_limpo[6:9]}-**"
+        cpf_hash = hmac.new(CHAVE_HMAC_CPF, cpf_limpo.encode("utf-8"), hashlib.sha256).hexdigest()
 
         registro = {
             "id": trb_id,
             "terceirizadaId": terceirizada_id,
             "nome": nome,
-            "cpf": cpf_limpo,
+            "cpfHash": cpf_hash,
             "cpfMascarado": cpf_mascarado,
             "ativo": True,
             "alocacoes": [],
