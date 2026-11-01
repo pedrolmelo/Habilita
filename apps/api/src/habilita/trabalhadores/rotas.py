@@ -10,7 +10,7 @@ Conforme o contrato OpenAPI e ADR 0002/0008:
 from __future__ import annotations
 
 import hashlib
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 
@@ -149,7 +149,9 @@ def vincular_trabalhador_contrato(
 # -----------------------------------------------------------------------------
 # Documentos (J2 e J3)
 # -----------------------------------------------------------------------------
-def detectar_content_type(cabecalho_bytes: bytes) -> str | None:
+def detectar_content_type(
+    cabecalho_bytes: bytes,
+) -> Literal["application/pdf", "image/jpeg", "image/png"] | None:
     """Detecta o MIME type pela assinatura mágica dos bytes (AGENTS.md)."""
     if cabecalho_bytes.startswith(b"%PDF"):
         return "application/pdf"
@@ -201,7 +203,7 @@ async def enviar_documento(
 
     sha256_hash = hashlib.sha256(conteudo).hexdigest()
     arquivo_meta = ArquivoMetadados(
-        contentType=content_type,  # type: ignore[arg-type]
+        contentType=content_type,
         tamanhoBytes=tamanho,
         sha256=sha256_hash,
     )

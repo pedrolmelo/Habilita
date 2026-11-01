@@ -5,3 +5,15 @@ title = "Habilita gitleaks config"
 
 [extend]
 useDefault = true
+
+# Chaves JWT dummy/públicas do Supabase utilizadas exclusivamente em ambiente local (.env.example e docker-compose.yml)
+[allowlist]
+description = "Tokens JWT de desenvolvimento local do Supabase Storage"
+paths = [
+  '''^\.env\.example$''',
+  '''^docker-compose\.yml$''',
+  '''^\.github/workflows/ci\.yml$''',
+  '''^apps/api/src/habilita/config\.py$''',
+  '''^seed/src/habilita_seed/config\.py$'''
+]
+
