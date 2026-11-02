@@ -73,7 +73,7 @@ def extrair_usuario(
 
     # Autenticação real com Firebase Admin SDK (quando integrado)
     try:
-        from firebase_admin import auth  # type: ignore[import-untyped,import-not-found]
+        from firebase_admin import auth  # type: ignore[import-not-found]
 
         decoded_claims: dict[str, Any] = auth.verify_id_token(token)
         uid = decoded_claims.get("uid", "")

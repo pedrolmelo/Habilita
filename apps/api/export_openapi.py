@@ -27,7 +27,6 @@ def main() -> None:
     yaml_path = api_dir / "openapi.yaml"
     with open(yaml_path, "w", encoding="utf-8") as f:
         yaml.dump(schema, f, allow_unicode=True, sort_keys=False)
-        f.write("\n")
 
     print(f"Sucesso! OpenAPI exportado para {json_path} e {yaml_path}")
     print(f"Versão: {schema.get('info', {}).get('version')}")
