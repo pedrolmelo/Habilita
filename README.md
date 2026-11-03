@@ -11,7 +11,7 @@ Empresas que contratam terceirizados controlam documentos por trabalhador e cont
 
 ## Estado atual
 
-**Fundação concluída (Checkpoint 1) · núcleo funcional em andamento (Checkpoint 2, 01/11/2026).**
+**Fundação concluída (Checkpoint 1) · núcleo funcional em revisão (Checkpoint 2) · próximo gate: Checkpoint 3 (15/11/2026).**
 
 | Parte | Situação na `main` |
 |---|---|
@@ -21,6 +21,7 @@ Empresas que contratam terceirizados controlam documentos por trabalhador e cont
 | Seed | 2 tenants, usuários com custom claims e dados de demonstração; reproduzível e idempotente (checksum conferido no CI) |
 | Segurança | Security Rules **deny-all** no Firestore e no Storage; testes de isolamento de tenant (T-ISO) rodando no CI |
 | CI | Segredos, higiene, qualidade da API, do seed e do web, build, Dockerfiles, smoke do compose e testes (`api-testes`), consolidados no `ci-ok` |
+| Nuvem (a partir da S5) | **Plano Custo Zero** do monitor ([ADR 0010](https://projeto-habilita.github.io/habilita-docs/arquitetura/adr/0010-plano-custo-zero/)): Firebase Spark (Hosting, Auth, Firestore), API no Render, arquivos no Supabase Storage, job diário no GitHub Actions. Gasto: US$ 0,00, sem cartão em nenhum serviço |
 
 O que cada gate exige e o que já foi entregue: [documentação](https://projeto-habilita.github.io/habilita-docs/).
 

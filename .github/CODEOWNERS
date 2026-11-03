@@ -32,6 +32,8 @@
 /AGENTS.md              @pedrolmelo @osamuelleite
 /CLAUDE.md              @pedrolmelo @osamuelleite
 /.hadolint.yaml         @pedrolmelo @osamuelleite
+/.gitleaks.toml         @osamuelleite @pedrolmelo
+/.claude/               @osamuelleite @pedrolmelo
 
 # Emuladores do Firebase e regras (DevOps + Tech Lead)
 /firebase.json          @pedrolmelo @osamuelleite
