@@ -167,4 +167,3 @@ def headers_token_expirado() -> dict[str, str]:
         "Authorization": "Bearer mock-token-expirado:tnt_alfa:gestor",
         "X-Simulated-Expired": "true",
     }
-

@@ -133,9 +133,7 @@ def test_h19_ca1_t_iso_02_gestor_lista_recursos_nao_enxerga_outro_tenant(
 
     for rota in rotas_listagem:
         resposta = client.get(rota, headers=headers_gestor_alfa)
-        assert resposta.status_code == 200, (
-            f"Falha ao listar {rota}: status {resposta.status_code}"
-        )
+        assert resposta.status_code == 200, f"Falha ao listar {rota}: status {resposta.status_code}"
 
         dados: dict[str, Any] = resposta.json()
         itens: list[dict[str, Any]] = dados.get("itens", [])
@@ -469,9 +467,7 @@ def test_h19_ca4_t_iso_06b_acesso_direto_storage_sem_api_rejeitado_deny_all() ->
 
     # Verifica se o Supabase Storage está ativo
     storage_url = (
-        os.getenv("STORAGE_PUBLIC_URL")
-        or os.getenv("STORAGE_URL")
-        or "http://127.0.0.1:5000"
+        os.getenv("STORAGE_PUBLIC_URL") or os.getenv("STORAGE_URL") or "http://127.0.0.1:5000"
     ).rstrip("/")
     bucket_nome = os.getenv("STORAGE_BUCKET", "documentos")
     anon_key = os.getenv(
