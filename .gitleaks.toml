@@ -17,4 +17,3 @@ paths = [
   '''^apps/api/src/habilita/config\.py$''',
   '''^seed/src/habilita_seed/config\.py$'''
 ]
-
