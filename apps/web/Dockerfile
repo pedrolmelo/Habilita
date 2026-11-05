@@ -3,7 +3,7 @@
 # Versão fixada por tag exata + digest (sha256).
 
 # node:24.22.0-trixie-slim (Node 24 "Krypton", LTS ativa)
-FROM node:24.22.0-trixie-slim@sha256:7f486cabe892bff8fef04c0f7da8dba84a560be3e4e2740b7a86afc57ebec315 AS base
+FROM node:24.22.1-trixie-slim@sha256:89c5244bc22a9bc3287d89ebc7e49b9cb5bb84cd40e6175ac3421d5a9f68b95a AS base
 
 # Desliga o aviso "nova versão do npm disponível" (só poluía o log).
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
