@@ -277,6 +277,67 @@ jobs:
             exit 1
           fi
 
+          echo "==> Validando BVA do limite de upload (5.000.000 bytes) e negação anon (ADR 0006/0011)..."
+          anon_key="${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE}"
+
+          # 1. 4.999.999 bytes: aceito
+          python3 -c "import sys; sys.stdout.buffer.write(b'%PDF-1.4\n' + b'a' * (4999999 - 9))" > /tmp/test_4999999.pdf
+          code_4999999=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $storage_key" \
+            -H "Content-Type: application/pdf" \
+            --data-binary "@/tmp/test_4999999.pdf" \
+            "http://127.0.0.1:5000/object/documentos/bva_4999999.pdf")
+          rm -f /tmp/test_4999999.pdf
+          if [ "$code_4999999" != "200" ] && [ "$code_4999999" != "201" ]; then
+            echo "ERRO: 4.999.999 bytes deveria ser aceito, obtido HTTP $code_4999999"
+            exit 1
+          fi
+
+          # 2. 5.000.000 bytes: aceito
+          python3 -c "import sys; sys.stdout.buffer.write(b'%PDF-1.4\n' + b'a' * (5000000 - 9))" > /tmp/test_5000000.pdf
+          code_5000000=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $storage_key" \
+            -H "Content-Type: application/pdf" \
+            --data-binary "@/tmp/test_5000000.pdf" \
+            "http://127.0.0.1:5000/object/documentos/bva_5000000.pdf")
+          rm -f /tmp/test_5000000.pdf
+          if [ "$code_5000000" != "200" ] && [ "$code_5000000" != "201" ]; then
+            echo "ERRO: 5.000.000 bytes deveria ser aceito, obtido HTTP $code_5000000"
+            exit 1
+          fi
+
+          # 3. 5.000.001 bytes: rejeitado com 413
+          python3 -c "import sys; sys.stdout.buffer.write(b'%PDF-1.4\n' + b'a' * (5000001 - 9))" > /tmp/test_5000001.pdf
+          code_5000001=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $storage_key" \
+            -H "Content-Type: application/pdf" \
+            --data-binary "@/tmp/test_5000001.pdf" \
+            "http://127.0.0.1:5000/object/documentos/bva_5000001.pdf")
+          rm -f /tmp/test_5000001.pdf
+          if [ "$code_5000001" != "413" ]; then
+            echo "ERRO: 5.000.001 bytes deveria ser rejeitado com HTTP 413, obtido HTTP $code_5000001"
+            exit 1
+          fi
+
+          # 4. Chave anon negada em leitura e escrita
+          code_anon_write=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer $anon_key" \
+            -H "Content-Type: application/pdf" \
+            -d "%PDF-1.4 probe" \
+            "http://127.0.0.1:5000/object/documentos/probe_anon.pdf")
+          if [ "$code_anon_write" = "200" ] || [ "$code_anon_write" = "201" ]; then
+            echo "ERRO: Escrita com chave anon não deve ser permitida, obtido HTTP $code_anon_write"
+            exit 1
+          fi
+
+          code_anon_read=$(curl -s -o /dev/null -w "%{http_code}" -X GET \
+            -H "Authorization: Bearer $anon_key" \
+            "http://127.0.0.1:5000/object/documentos/bva_5000000.pdf")
+          if [ "$code_anon_read" = "200" ]; then
+            echo "ERRO: Leitura com chave anon não deve ser permitida, obtido HTTP $code_anon_read"
+            exit 1
+          fi
+
       - name: Popular dados com seed e verificar idempotência
         run: |
           set -euo pipefail
