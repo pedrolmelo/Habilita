@@ -99,6 +99,7 @@ Todas as portas são publicadas exclusivamente em `127.0.0.1` (loopback) para se
 | **Emuladores UI** | [http://localhost:4000](http://localhost:4000) | Painel visual do Firebase Emulator Suite |
 | **Auth Emulator** | `localhost:9099` | Emulador do Firebase Auth |
 | **Firestore Emulator** | `localhost:8080` | Emulador do Cloud Firestore |
+| **Storage Emulator** | `localhost:9199` | Emulador do Cloud Storage (regras deny-all) |
 | **Supabase Storage** | [http://localhost:5000](http://localhost:5000) | API REST do Supabase Storage (`/status` para healthcheck) |
 
 ### Como inspecionar o Supabase Storage localmente
@@ -106,8 +107,8 @@ Todas as portas são publicadas exclusivamente em `127.0.0.1` (loopback) para se
 O Supabase Storage sobe com o bucket privado `documentos` inicializado automaticamente. Você pode listar e inspecionar os objetos enviados pelo seed ou pela API utilizando a `SUPABASE_SERVICE_KEY` local:
 
 ```bash
-# Definir a chave de serviço local de desenvolvimento:
-KEY=$(grep SUPABASE_SERVICE_KEY .env.example | cut -d= -f2 | tr -d '"')
+# Definir a chave de serviço local de desenvolvimento (padronizada no docker-compose.yml):
+KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q"
 
 # Verificar a saúde do Storage:
 curl -s http://127.0.0.1:5000/status

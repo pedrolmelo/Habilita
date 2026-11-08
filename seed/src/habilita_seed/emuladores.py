@@ -55,7 +55,7 @@ def resetar_emuladores(config: SeedConfig) -> None:
     try:
         req = urllib.request.Request(auth_url, method="DELETE")
         # Requisição local aos emuladores; esquema http validado acima
-        with urllib.request.urlopen(req) as resp:  # noqa: S310
+        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
             if resp.status not in (200, 204):
                 logger.warning("Resposta inesperada ao resetar Auth: HTTP %s", resp.status)
         logger.info("Emulador de Auth limpo com sucesso.")
@@ -70,7 +70,7 @@ def resetar_emuladores(config: SeedConfig) -> None:
     try:
         req = urllib.request.Request(firestore_url, method="DELETE")
         # Requisição local aos emuladores; esquema http validado acima
-        with urllib.request.urlopen(req) as resp:  # noqa: S310
+        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
             if resp.status not in (200, 204):
                 logger.warning("Resposta inesperada ao resetar Firestore: HTTP %s", resp.status)
         logger.info("Emulador de Firestore limpo com sucesso.")
@@ -85,7 +85,7 @@ def resetar_emuladores(config: SeedConfig) -> None:
             headers={"Authorization": f"Bearer {config.storage_service_key}"},
             method="POST",
         )
-        with urllib.request.urlopen(req) as resp:  # noqa: S310
+        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
             if resp.status in (200, 201):
                 logger.info(
                     "Bucket de Storage ('%s') esvaziado com sucesso.", config.storage_bucket
@@ -150,7 +150,7 @@ def enviar_arquivo_supabase(
         },
         method="POST",
     )
-    with urllib.request.urlopen(req) as resp:  # noqa: S310
+    with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
         if resp.status not in (200, 201):
             raise RuntimeError(
                 f"Falha ao enviar arquivo para o Supabase Storage (HTTP {resp.status})"
@@ -165,7 +165,7 @@ def baixar_objeto_supabase(config: SeedConfig, caminho: str) -> tuple[bytes, str
         headers={"Authorization": f"Bearer {config.storage_service_key}"},
         method="GET",
     )
-    with urllib.request.urlopen(req) as resp:  # noqa: S310
+    with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
         content_type = resp.headers.get("Content-Type", "")
         return resp.read(), content_type
 
