@@ -3,9 +3,10 @@
 Imagem Docker dos emuladores locais do Firebase:
 - **Auth:** porta `9099`
 - **Cloud Firestore:** porta `8080`
+- **Cloud Storage:** porta `9199` (regras deny-all para testes de segurança)
 - **Interface Web (Emulator UI):** porta `4000`
 
-> **Nota sobre o Storage:** Conforme o Plano Custo Zero, o armazenamento de arquivos é provido localmente pelo contêiner do **Supabase Storage** (porta `5000`), dispensando o emulador de Cloud Storage do Firebase.
+> **Nota sobre o Storage:** Conforme o Plano Custo Zero, o armazenamento de arquivos da aplicação é provido localmente pelo contêiner do **Supabase Storage** (porta `5000`). O emulador de Cloud Storage do Firebase (porta `9199`) é mantido com regras deny-all para validação de testes de isolamento (T-ISO-06).
 
 ## Características técnicas
 

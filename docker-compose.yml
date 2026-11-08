@@ -36,6 +36,7 @@ services:
       - "127.0.0.1:${EMULATOR_UI_HOST_PORT:-4000}:4000" # interface dos emuladores
       - "127.0.0.1:${AUTH_EMULATOR_HOST_PORT:-9099}:9099" # Auth
       - "127.0.0.1:${FIRESTORE_EMULATOR_HOST_PORT:-8080}:8080" # Firestore
+      - "127.0.0.1:${STORAGE_EMULATOR_HOST_PORT:-9199}:9199" # Storage (emulador mantido para testes de deny-all)
     healthcheck:
       test: ["CMD", "node", "/usr/local/bin/healthcheck.mjs"]
       interval: 10s
