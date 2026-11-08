@@ -79,6 +79,13 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # Capacidades mínimas para o entrypoint trocar para o usuário postgres (su-exec) e gerenciar PGDATA
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - FOWNER
+      - DAC_OVERRIDE
     logging: *logging
 
   # ---------------------------------------------------------------------------
