@@ -29,7 +29,7 @@ from habilita.armazenamento.porta import (
 class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     """Impede o redirecionamento automático para evitar vazamento de credenciais."""
 
-    def redirect_request(  # type: ignore[override]
+    def redirect_request(
         self,
         req: urllib.request.Request,
         fp: object,
