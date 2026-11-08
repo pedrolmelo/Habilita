@@ -25,7 +25,7 @@ function HealthBlock() {
         // Se vazia ou não definida (ambiente local), mantém a chamada relativa '/api'
         // que passa pelo proxy do Vite e chega em GET /healthz da API.
         const apiBaseUrl = import.meta.env.VITE_API_URL
-          ? String(import.meta.env.VITE_API_URL).replace(/\/$/, '')
+          ? import.meta.env.VITE_API_URL.replace(/\/+$/, '')
           : ''
         const url = apiBaseUrl ? `${apiBaseUrl}/healthz` : '/api/healthz'
         const response = await fetch(url, { signal: controller.signal })
