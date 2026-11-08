@@ -73,9 +73,12 @@ services:
       start_period: 5s
     mem_limit: 256m
     cpus: 0.5
+    init: true
     restart: "no"
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
     logging: *logging
 
   # ---------------------------------------------------------------------------
@@ -110,9 +113,12 @@ services:
       start_period: 10s
     mem_limit: 256m
     cpus: 0.5
+    init: true
     restart: "no"
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
     logging: *logging
 
   # ---------------------------------------------------------------------------
@@ -127,7 +133,7 @@ services:
         condition: service_healthy
     environment:
       STORAGE_URL: http://storage:5000
-      STORAGE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q}
       STORAGE_BUCKET: ${STORAGE_BUCKET:-documentos}
       STORAGE_MAX_BYTES: ${STORAGE_MAX_BYTES:-5000000}
       STORAGE_ALLOWED_MIME: ${STORAGE_ALLOWED_MIME:-application/pdf,image/jpeg}
@@ -136,6 +142,11 @@ services:
     entrypoint: ["sh", "/usr/local/bin/init-bucket.sh"]
     mem_limit: 128m
     cpus: 0.25
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     logging: *logging
 
   # ---------------------------------------------------------------------------
@@ -156,11 +167,11 @@ services:
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-habilita}
       FIREBASE_AUTH_EMULATOR_HOST: emulators:9099
       FIRESTORE_EMULATOR_HOST: emulators:8080
+      FIREBASE_STORAGE_EMULATOR_HOST: emulators:9199
       STORAGE_URL: http://storage:5000
       STORAGE_PUBLIC_URL: http://127.0.0.1:${STORAGE_HOST_PORT:-5000}
       STORAGE_BUCKET: ${STORAGE_BUCKET:-documentos}
-      STORAGE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q}
-      STORAGE_ANON_KEY: ${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q}
     ports:
       - "127.0.0.1:${API_HOST_PORT:-8000}:8000"
     volumes:
@@ -247,8 +258,9 @@ services:
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-habilita}
       FIREBASE_AUTH_EMULATOR_HOST: emulators:9099
       FIRESTORE_EMULATOR_HOST: emulators:8080
+      FIREBASE_STORAGE_EMULATOR_HOST: emulators:9199
       STORAGE_URL: http://storage:5000
-      STORAGE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q}
       STORAGE_BUCKET: ${STORAGE_BUCKET:-documentos}
       CPF_HMAC_KEY: ${CPF_HMAC_KEY:-demo-cpf-hmac-key-for-emulator-only}
     depends_on:

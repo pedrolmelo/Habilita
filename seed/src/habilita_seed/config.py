@@ -133,8 +133,8 @@ def validar_trava_emulador() -> SeedConfig:
     )
 
     storage_service_key = (
-        os.environ.get("STORAGE_SERVICE_KEY", "").strip()
-        or os.environ.get("SUPABASE_SERVICE_KEY", "").strip()
+        os.environ.get("SUPABASE_SERVICE_KEY", "").strip()
+        or os.environ.get("STORAGE_SERVICE_KEY", "").strip()
         or SUPABASE_SERVICE_KEY_PADRAO
     )
 
