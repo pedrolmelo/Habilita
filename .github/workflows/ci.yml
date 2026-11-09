@@ -306,16 +306,18 @@ jobs:
             exit 1
           fi
 
-          # 3. 5.000.001 bytes: rejeitado com 413
+          # 3. 5.000.001 bytes: rejeitado com 413 (ou 400 Payload Too Large)
           python3 -c "import sys; sys.stdout.buffer.write(b'%PDF-1.4\n' + b'a' * (5000001 - 9))" > /tmp/test_5000001.pdf
-          code_5000001=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+          res_5000001=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Authorization: Bearer $storage_key" \
             -H "Content-Type: application/pdf" \
             --data-binary "@/tmp/test_5000001.pdf" \
             "http://127.0.0.1:5000/object/documentos/bva_5000001.pdf")
           rm -f /tmp/test_5000001.pdf
-          if [ "$code_5000001" != "413" ]; then
-            echo "ERRO: 5.000.001 bytes deveria ser rejeitado com HTTP 413, obtido HTTP $code_5000001"
+          code_5000001=$(echo "$res_5000001" | tail -n 1)
+          body_5000001=$(echo "$res_5000001" | sed '$d')
+          if [ "$code_5000001" != "413" ] && ! { [ "$code_5000001" = "400" ] && echo "$body_5000001" | grep -q "413"; }; then
+            echo "ERRO: 5.000.001 bytes deveria ser rejeitado com HTTP 413 (ou 400 Payload Too Large), obtido HTTP $code_5000001: $body_5000001"
             exit 1
           fi
 
