@@ -97,6 +97,36 @@ def requisicao_invalida(
     )
 
 
+def conflito(
+    detail: str = "Conflito com o estado atual do recurso.",
+) -> AppException:
+    return AppException(
+        status_code=409,
+        title="Conflito",
+        detail=detail,
+    )
+
+
+def entidade_muito_grande(
+    detail: str = "O arquivo excede o limite máximo permitido de 5.000.000 bytes.",
+) -> AppException:
+    return AppException(
+        status_code=413,
+        title="Arquivo muito grande",
+        detail=detail,
+    )
+
+
+def tipo_midia_nao_suportado(
+    detail: str = "Tipo de arquivo não permitido. Apenas PDF e JPEG são aceitos.",
+) -> AppException:
+    return AppException(
+        status_code=415,
+        title="Tipo de mídia não suportado",
+        detail=detail,
+    )
+
+
 def extrair_request_id(request: Request) -> str | None:
     return getattr(request.state, "request_id", None) or request.headers.get("X-Request-Id")
 

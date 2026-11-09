@@ -30,14 +30,14 @@ def test_healthz_e_readyz_sem_autenticacao(client: TestClient) -> None:
 
 def test_me_usuario_autenticado_retorna_perfil(
     client: TestClient,
-    headers_gestor_alfa: dict[str, str],
+    headers_admin_alfa: dict[str, str],
 ) -> None:
     """GET /me retorna dados do usuário autenticado a partir das custom claims."""
-    resp = client.get("/me", headers=headers_gestor_alfa)
+    resp = client.get("/me", headers=headers_admin_alfa)
     assert resp.status_code == 200
     corpo = resp.json()
     assert corpo["tenantId"] == TNT_ALFA
-    assert corpo["papel"] == "gestor"
+    assert corpo["papel"] == "admin_contratante"
     assert "uid" in corpo
 
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Annotated, Any
 
-from fastapi import Depends, Header, Request
+from fastapi import Depends, Header
 
 from habilita.comum.erros import acesso_proibido, nao_autenticado
 
@@ -40,43 +40,20 @@ class UsuarioAutenticado:
 
 
 def extrair_usuario(
-    request: Request,
     authorization: Annotated[str | None, Header()] = None,
-    x_simulated_tenant_id: Annotated[str | None, Header()] = None,
-    x_simulated_papel: Annotated[str | None, Header()] = None,
-    x_simulated_terceirizada_id: Annotated[str | None, Header()] = None,
-    x_simulated_uid: Annotated[str | None, Header()] = None,
 ) -> UsuarioAutenticado:
-    """Extrai e valida a identidade do usuário autenticado a partir do token ou headers."""
+    """Extrai e valida a identidade do usuário autenticado a partir do token Bearer."""
     if not authorization or not authorization.startswith("Bearer "):
         raise nao_autenticado("Cabeçalho de autorização Bearer ausente ou inválido.")
 
     token = authorization.removeprefix("Bearer ").strip()
 
-    # Suporte a ambiente local e testes determinísticos simulados (conftest.py)
-    if token.startswith("mock-token:") or x_simulated_tenant_id:
-        partes = token.split(":")
-        tenant_id = x_simulated_tenant_id or (partes[1] if len(partes) > 1 else None)
-        papel = x_simulated_papel or (partes[2] if len(partes) > 2 else None)
-        terceirizada_id = x_simulated_terceirizada_id or (partes[3] if len(partes) > 3 else None)
-        uid = x_simulated_uid or f"uid_{papel}_{tenant_id}"
-
-        if not tenant_id or not papel:
-            raise nao_autenticado("Token simulado inválido ou incompleto.")
-
-        return UsuarioAutenticado(
-            uid=uid,
-            tenant_id=tenant_id,
-            papel=papel,
-            terceirizada_id=terceirizada_id,
-        )
-
-    # Autenticação real com Firebase Admin SDK (quando integrado)
+    # Autenticação real com Firebase Admin SDK
     try:
         from firebase_admin import auth  # type: ignore[import-not-found]
 
         decoded_claims: dict[str, Any] = auth.verify_id_token(token)
-        uid = decoded_claims.get("uid", "")
+        uid = str(decoded_claims.get("uid", decoded_claims.get("user_id", "")))
         tenant_id = decoded_claims.get("tenantId")
         papel = decoded_claims.get("papel")
         terceirizada_id = decoded_claims.get("terceirizadaId")
@@ -88,9 +65,9 @@ def extrair_usuario(
 
         return UsuarioAutenticado(
             uid=uid,
-            tenant_id=tenant_id,
-            papel=papel,
-            terceirizada_id=terceirizada_id,
+            tenant_id=str(tenant_id),
+            papel=str(papel),
+            terceirizada_id=str(terceirizada_id) if terceirizada_id else None,
         )
     except Exception as exc:
         raise nao_autenticado(f"Falha ao validar token Firebase: {exc}") from exc

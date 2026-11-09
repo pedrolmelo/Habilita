@@ -24,14 +24,14 @@ from habilita.cadastros.schemas import (
     Terceirizada,
     TipoDocumento,
 )
-from habilita.comum.auth import UsuarioAutenticado, exigir_papeis
+from habilita.comum.auth import UsuarioAutenticado, exigir_papeis, extrair_usuario
 from habilita.comum.erros import recurso_nao_encontrado
 
 router = APIRouter(tags=["Cadastros"])
 
 
 def obter_repositorio(
-    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("gestor", "terceirizada"))],
+    usuario: Annotated[UsuarioAutenticado, Depends(extrair_usuario)],
 ) -> CadastrosRepositorio:
     """Injeta o repositório instanciado com o tenantId seguro da claim."""
     return CadastrosRepositorio(tenant_id=usuario.tenant_id)
@@ -47,7 +47,9 @@ def obter_repositorio(
 )
 def listar_terceirizadas(
     repo: Annotated[CadastrosRepositorio, Depends(obter_repositorio)],
-    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("gestor"))],
+    usuario: Annotated[
+        UsuarioAutenticado, Depends(exigir_papeis("admin_contratante", "analista_sst"))
+    ],
     limite: Annotated[int, Query(ge=1, le=50)] = 20,
     cursor: Annotated[str | None, Query()] = None,
 ) -> Pagina[Terceirizada]:
@@ -64,7 +66,7 @@ def listar_terceirizadas(
 def cadastrar_terceirizada(
     payload: NovaTerceirizada,
     repo: Annotated[CadastrosRepositorio, Depends(obter_repositorio)],
-    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("gestor"))],
+    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("admin_contratante"))],
 ) -> Terceirizada:
     return repo.criar_terceirizada(payload)
 
@@ -79,6 +81,10 @@ def cadastrar_terceirizada(
 )
 def listar_tipos_documento(
     repo: Annotated[CadastrosRepositorio, Depends(obter_repositorio)],
+    usuario: Annotated[
+        UsuarioAutenticado,
+        Depends(exigir_papeis("admin_contratante", "analista_sst", "terceirizada")),
+    ],
 ) -> ListaTiposDocumento:
     itens = repo.listar_tipos_documento()
     return ListaTiposDocumento(itens=itens)
@@ -93,7 +99,7 @@ def listar_tipos_documento(
 def cadastrar_tipo_documento(
     payload: NovoTipoDocumento,
     repo: Annotated[CadastrosRepositorio, Depends(obter_repositorio)],
-    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("gestor"))],
+    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("admin_contratante"))],
 ) -> TipoDocumento:
     return repo.criar_tipo_documento(payload)
 
@@ -108,7 +114,10 @@ def cadastrar_tipo_documento(
 )
 def listar_contratos(
     repo: Annotated[CadastrosRepositorio, Depends(obter_repositorio)],
-    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("gestor", "terceirizada"))],
+    usuario: Annotated[
+        UsuarioAutenticado,
+        Depends(exigir_papeis("admin_contratante", "analista_sst", "terceirizada")),
+    ],
     limite: Annotated[int, Query(ge=1, le=50)] = 20,
     cursor: Annotated[str | None, Query()] = None,
 ) -> Pagina[Contrato]:
@@ -130,7 +139,7 @@ def listar_contratos(
 def criar_contrato(
     payload: NovoContrato,
     repo: Annotated[CadastrosRepositorio, Depends(obter_repositorio)],
-    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("gestor"))],
+    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("admin_contratante"))],
 ) -> Contrato:
     # Garante que a terceirizada vinculada existe no tenant do usuário
     terceirizada = repo.obter_terceirizada(payload.terceirizadaId)
@@ -150,7 +159,10 @@ def criar_contrato(
 def detalhar_contrato(
     contrato_id: str,
     repo: Annotated[CadastrosRepositorio, Depends(obter_repositorio)],
-    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("gestor", "terceirizada"))],
+    usuario: Annotated[
+        UsuarioAutenticado,
+        Depends(exigir_papeis("admin_contratante", "analista_sst", "terceirizada")),
+    ],
 ) -> Contrato:
     filtro_terceirizada = usuario.terceirizada_id if usuario.papel == "terceirizada" else None
     contrato = repo.obter_contrato(
@@ -172,7 +184,7 @@ def substituir_exigencias_contrato(
     contrato_id: str,
     payload: SubstituirExigencias,
     repo: Annotated[CadastrosRepositorio, Depends(obter_repositorio)],
-    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("gestor"))],
+    usuario: Annotated[UsuarioAutenticado, Depends(exigir_papeis("admin_contratante"))],
 ) -> Contrato:
     # Valida que todos os tipos de documentos existem no tenant
     for tid in payload.tipoDocumentoIds:

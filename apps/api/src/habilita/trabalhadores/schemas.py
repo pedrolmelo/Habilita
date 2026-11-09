@@ -32,6 +32,18 @@ class NovoTrabalhador(BaseModel):
         digitos = re.sub(r"\D", "", v)
         if len(digitos) != 11:
             raise ValueError("CPF deve conter exatamente 11 dígitos numéricos.")
+        if digitos == digitos[0] * 11:
+            raise ValueError("CPF inválido.")
+        soma1 = sum(int(digitos[i]) * (10 - i) for i in range(9))
+        r1 = soma1 % 11
+        d1 = 0 if r1 < 2 else 11 - r1
+        if int(digitos[9]) != d1:
+            raise ValueError("CPF inválido (primeiro dígito verificador incorreto).")
+        soma2 = sum(int(digitos[i]) * (11 - i) for i in range(10))
+        r2 = soma2 % 11
+        d2 = 0 if r2 < 2 else 11 - r2
+        if int(digitos[10]) != d2:
+            raise ValueError("CPF inválido (segundo dígito verificador incorreto).")
         return digitos
 
 
@@ -75,8 +87,8 @@ class ArquivoMetadados(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    contentType: Literal["application/pdf", "image/jpeg", "image/png"]
-    tamanhoBytes: int = Field(ge=1, le=10485760)
+    contentType: Literal["application/pdf", "image/jpeg"]
+    tamanhoBytes: int = Field(ge=1, le=5000000)
     sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
 
 
@@ -125,7 +137,7 @@ class RejeitarDocumentoPayload(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    motivo: str = Field(min_length=5, max_length=500)
+    motivo: str = Field(min_length=10, max_length=500)
 
 
 class UrlDownloadResponse(BaseModel):

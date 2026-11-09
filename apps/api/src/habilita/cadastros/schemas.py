@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 T = TypeVar("T")
 
@@ -96,6 +96,12 @@ class NovoContrato(BaseModel):
     terceirizadaId: str = Field(min_length=1)
     dataInicio: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
     dataFim: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+
+    @model_validator(mode="after")
+    def validar_periodo(self) -> NovoContrato:
+        if self.dataFim < self.dataInicio:
+            raise ValueError("dataFim não pode ser anterior a dataInicio.")
+        return self
 
 
 class SubstituirExigencias(BaseModel):

@@ -2,15 +2,20 @@
 
 Contém fixtures para o cliente de teste FastAPI e geradores de cabeçalhos
 autenticados baseados nas custom claims definidas na ADR 0002.
+Utiliza app.dependency_overrides[extrair_usuario] conforme convenção FastAPI.
 """
 
 from __future__ import annotations
 
 from collections.abc import Generator
+from typing import Annotated
 
 import pytest
+from fastapi import Header
 from fastapi.testclient import TestClient
 
+from habilita.comum.auth import UsuarioAutenticado, extrair_usuario
+from habilita.comum.erros import nao_autenticado
 from habilita.main import app
 
 # -----------------------------------------------------------------------------
@@ -38,33 +43,54 @@ CPF_TRB_ALFA_1 = "10100000126"
 CPF_TRB_BETA_1 = "20200000160"
 
 
+def mock_extrair_usuario(
+    authorization: Annotated[str | None, Header()] = None,
+) -> UsuarioAutenticado:
+    """Substitui extrair_usuario exclusivamente durante testes unitários e de integração."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise nao_autenticado("Cabeçalho de autorização Bearer ausente ou inválido.")
+
+    token = authorization.removeprefix("Bearer ").strip()
+    partes = token.split(":")
+
+    if len(partes) >= 3 and partes[0] in ("mock-token", "test-token"):
+        tenant_id = partes[1]
+        papel = partes[2]
+        terceirizada_id = partes[3] if len(partes) > 3 and partes[3] else None
+        uid = partes[4] if len(partes) > 4 and partes[4] else f"uid_{papel}_{tenant_id}"
+        return UsuarioAutenticado(
+            uid=uid,
+            tenant_id=tenant_id,
+            papel=papel,
+            terceirizada_id=terceirizada_id,
+        )
+
+    raise nao_autenticado("Token de teste inválido.")
+
+
 def criar_headers_autenticados(
     tenant_id: str,
     papel: str,
     terceirizada_id: str | None = None,
     uid: str | None = None,
 ) -> dict[str, str]:
-    """Cria cabeçalhos simulando autenticação via Bearer token com custom claims.
-
-    Conforme ADR 0002, a API autentica via Firebase ID token e extrai:
-    - tenantId: string ('tnt_alfa', 'tnt_beta')
-    - papel: 'gestor' | 'terceirizada' | 'porteiro'
-    - terceirizadaId: string (obrigatório se papel == 'terceirizada')
-    """
-    token_simulado = f"mock-token:{tenant_id}:{papel}"
+    """Cria cabeçalhos simulando autenticação via Bearer token."""
+    token = f"test-token:{tenant_id}:{papel}"
     if terceirizada_id:
-        token_simulado += f":{terceirizada_id}"
-
-    headers: dict[str, str] = {
-        "Authorization": f"Bearer {token_simulado}",
-        "X-Simulated-Tenant-Id": tenant_id,
-        "X-Simulated-Papel": papel,
-    }
-    if terceirizada_id:
-        headers["X-Simulated-Terceirizada-Id"] = terceirizada_id
+        token += f":{terceirizada_id}"
+    else:
+        token += ":"
     if uid:
-        headers["X-Simulated-UID"] = uid
-    return headers
+        token += f":{uid}"
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(autouse=True)
+def override_auth_dependency() -> Generator[None, None, None]:
+    """Injeta mock_extrair_usuario nas dependências do FastAPI durante todos os testes."""
+    app.dependency_overrides[extrair_usuario] = mock_extrair_usuario
+    yield
+    app.dependency_overrides.pop(extrair_usuario, None)
 
 
 @pytest.fixture
@@ -75,13 +101,29 @@ def client() -> Generator[TestClient, None, None]:
 
 
 @pytest.fixture
-def headers_gestor_alfa() -> dict[str, str]:
-    """Cabeçalhos autenticados para o Gestor SST do Tenant Alfa."""
+def headers_admin_alfa() -> dict[str, str]:
+    """Cabeçalhos autenticados para o Admin Contratante do Tenant Alfa."""
     return criar_headers_autenticados(
         tenant_id=TNT_ALFA,
-        papel="gestor",
-        uid="uid_gestor_alfa",
+        papel="admin_contratante",
+        uid="uid_admin_alfa",
     )
+
+
+@pytest.fixture
+def headers_analista_alfa() -> dict[str, str]:
+    """Cabeçalhos autenticados para o Analista SST do Tenant Alfa."""
+    return criar_headers_autenticados(
+        tenant_id=TNT_ALFA,
+        papel="analista_sst",
+        uid="uid_analista_alfa",
+    )
+
+
+@pytest.fixture
+def headers_gestor_alfa(headers_admin_alfa: dict[str, str]) -> dict[str, str]:
+    """Compatibilidade com fixtures legadas apontando para admin_contratante."""
+    return headers_admin_alfa
 
 
 @pytest.fixture
@@ -117,13 +159,29 @@ def headers_terceirizada_2_alfa() -> dict[str, str]:
 
 
 @pytest.fixture
-def headers_gestor_beta() -> dict[str, str]:
-    """Cabeçalhos autenticados para o Gestor SST do Tenant Beta."""
+def headers_admin_beta() -> dict[str, str]:
+    """Cabeçalhos autenticados para o Admin Contratante do Tenant Beta."""
     return criar_headers_autenticados(
         tenant_id=TNT_BETA,
-        papel="gestor",
-        uid="uid_gestor_beta",
+        papel="admin_contratante",
+        uid="uid_admin_beta",
     )
+
+
+@pytest.fixture
+def headers_analista_beta() -> dict[str, str]:
+    """Cabeçalhos autenticados para o Analista SST do Tenant Beta."""
+    return criar_headers_autenticados(
+        tenant_id=TNT_BETA,
+        papel="analista_sst",
+        uid="uid_analista_beta",
+    )
+
+
+@pytest.fixture
+def headers_gestor_beta(headers_admin_beta: dict[str, str]) -> dict[str, str]:
+    """Compatibilidade com fixtures legadas apontando para admin_contratante."""
+    return headers_admin_beta
 
 
 @pytest.fixture

@@ -15,6 +15,8 @@ import re
 import uuid
 from typing import Any
 
+from habilita.comum.erros import conflito, recurso_nao_encontrado
+from habilita.config import get_settings
 from habilita.trabalhadores.schemas import (
     Alocacao,
     ArquivoMetadados,
@@ -25,9 +27,6 @@ from habilita.trabalhadores.schemas import (
 )
 
 UTC = getattr(datetime, "UTC", datetime.timezone.utc)  # noqa: UP017
-
-# Base determinística em memória compatível com o seed (CPF armazenado apenas como HMAC-SHA256)
-CHAVE_HMAC_CPF: bytes = b"demo-cpf-hmac-key-for-emulator-only"
 
 _BANCO_TRABALHADORES: dict[str, dict[str, dict[str, Any]]] = {
     "tnt_alfa": {
@@ -191,7 +190,12 @@ class TrabalhadoresRepositorio:
         trb_id = f"trb_{uuid.uuid4().hex[:8]}"
         cpf_limpo = re.sub(r"\D", "", cpf)
         cpf_mascarado = f"***.{cpf_limpo[3:6]}.{cpf_limpo[6:9]}-**"
-        cpf_hash = hmac.new(CHAVE_HMAC_CPF, cpf_limpo.encode("utf-8"), hashlib.sha256).hexdigest()
+        chave_hmac = get_settings().cpf_hmac_key.encode("utf-8")
+        cpf_hash = hmac.new(chave_hmac, cpf_limpo.encode("utf-8"), hashlib.sha256).hexdigest()
+
+        for existente in tenant_map.values():
+            if existente.get("cpfHash") == cpf_hash:
+                raise conflito("CPF já cadastrado no tenant.")
 
         registro = {
             "id": trb_id,
@@ -308,22 +312,28 @@ class TrabalhadoresRepositorio:
         docs_map[doc_id] = registro
         return Documento(**registro)
 
-    def aprovar_documento(self, documento_id: str) -> Documento | None:
+    def aprovar_documento(self, documento_id: str) -> Documento:
         docs_map = _BANCO_DOCUMENTOS.get(self.tenant_id, {})
         dados = docs_map.get(documento_id)
         if not dados:
-            return None
+            raise recurso_nao_encontrado(f"Documento '{documento_id}' não encontrado.")
+
+        if dados.get("statusRevisao") != "PENDENTE":
+            raise conflito("Apenas documentos com status PENDENTE podem ser aprovados.")
 
         dados["statusRevisao"] = "APROVADO"
         dados["revisadoEm"] = datetime.datetime.now(UTC).isoformat()
         dados["motivoRejeicao"] = None
         return Documento(**dados)
 
-    def rejeitar_documento(self, documento_id: str, motivo: str) -> Documento | None:
+    def rejeitar_documento(self, documento_id: str, motivo: str) -> Documento:
         docs_map = _BANCO_DOCUMENTOS.get(self.tenant_id, {})
         dados = docs_map.get(documento_id)
         if not dados:
-            return None
+            raise recurso_nao_encontrado(f"Documento '{documento_id}' não encontrado.")
+
+        if dados.get("statusRevisao") != "PENDENTE":
+            raise conflito("Apenas documentos com status PENDENTE podem ser rejeitados.")
 
         dados["statusRevisao"] = "REJEITADO"
         dados["revisadoEm"] = datetime.datetime.now(UTC).isoformat()
