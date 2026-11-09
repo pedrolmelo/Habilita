@@ -34,14 +34,6 @@ from .conftest import (
 )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Rotas /contratos/{id}, /trabalhadores/{id} e /documentos/{id} inexistentes (Semana 4). "
-        "Atualmente retornam 404 de rota não encontrada do FastAPI em vez do 404 Problem Details "
-        "(RFC 9457, application/problem+json) da camada de autorização."
-    ),
-)
 def test_h19_ca1_t_iso_01_gestor_acessa_recursos_outro_tenant_retorna_404(
     client: TestClient,
     headers_gestor_alfa: dict[str, str],
@@ -137,10 +129,6 @@ def test_h19_ca1_t_iso_02_gestor_lista_recursos_nao_enxerga_outro_tenant(
             assert item.get("tenantId", TNT_ALFA) == TNT_ALFA
 
 
-@pytest.mark.xfail(
-    strict=False,
-    reason="Rota POST /contratos prevista para implementação na Semana 4 (ADR 0002).",
-)
 def test_h19_ca5_t_iso_03_injecao_tenant_id_criacao_contrato_isolado_no_tenant_da_claim(
     client: TestClient,
     headers_gestor_alfa: dict[str, str],
@@ -234,14 +222,6 @@ def test_h19_ca1_t_iso_04_portaria_consulta_cpf_outro_tenant_retorna_nao_cadastr
     assert "Alexandre Pires Barbosa" not in resposta.text
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Rota GET /trabalhadores/{id} inexistente (Semana 4). "
-        "Atualmente retorna 404 de rota não encontrada do FastAPI em vez do 404 Problem Details "
-        "(RFC 9457, application/problem+json) da camada de autorização."
-    ),
-)
 def test_h19_ca3_t_iso_05_terceirizada_acessa_trabalhador_outra_terceirizada_retorna_404(
     client: TestClient,
     headers_terceirizada_1_alfa: dict[str, str],
@@ -325,14 +305,6 @@ def test_h19_ca4_t_iso_06_acesso_direto_firestore_storage_sem_api_rejeitado_deny
     )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Rota POST /documentos/{id}/url-download inexistente (Semana 4). "
-        "Atualmente retorna 404 de rota não encontrada do FastAPI em vez do 404 Problem Details "
-        "(RFC 9457, application/problem+json) da camada de autorização."
-    ),
-)
 def test_h19_ca1_t_iso_07_gestor_gera_url_download_documento_outro_tenant_retorna_404(
     client: TestClient,
     headers_gestor_alfa: dict[str, str],

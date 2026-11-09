@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     port: int = Field(default=8000, ge=1, le=65535)
     # ID do projeto Firebase (FIREBASE_PROJECT_ID). `demo-` roda só nos emuladores.
     firebase_project_id: str = Field(default="demo-habilita", min_length=1, max_length=64)
+    # Chave HMAC para anonimização/hashing de CPF (CPF_HMAC_KEY).
+    cpf_hmac_key: str = Field(
+        default="demo-cpf-hmac-key-for-emulator-only",
+        min_length=16,
+    )
 
 
 def get_settings() -> Settings:
