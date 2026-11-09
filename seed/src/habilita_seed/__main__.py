@@ -77,8 +77,8 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("Auth Emulator: %s", config.auth_emulator_host)
     logger.info("Firestore Emulator: %s", config.firestore_emulator_host)
     logger.info(
-        "Storage Emulator: %s (bucket: %s)",
-        config.storage_emulator_host,
+        "Supabase Storage: %s (bucket: %s)",
+        config.storage_url,
         config.storage_bucket,
     )
 
