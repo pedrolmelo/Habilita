@@ -21,7 +21,7 @@
 - [ ] Nenhum segredo no código (tokens, chaves, `.env`, credenciais)
 - [ ] Telas com estados de carregando, vazio e erro (se houver tela)
 - [ ] Logs sem dados pessoais
-- [ ] Nenhum recurso novo no GCP sem ADR ou aprovação do Tech Lead
+- [ ] Nenhum recurso novo em nuvem sem ADR ou aprovação do Tech Lead (Plano Custo Zero: sem GCP pago/Blaze)
 - [ ] Docs/OpenAPI atualizados no repositório `habilita-docs` quando o contrato ou uma decisão mudou (link do PR lá: )
 
 ## Segurança

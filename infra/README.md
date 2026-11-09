@@ -1,6 +1,6 @@
-# infra — Infraestrutura como código
+# infra — Infraestrutura
 
-Reservada para a infraestrutura como código (Terraform) do GCP, em etapa futura.
+Reservada para automações e configurações de infraestrutura do Plano Custo Zero (Firebase Spark, Render, Supabase Storage, GitHub Actions e UptimeRobot).
 Responsáveis: DevOps e Tech Lead.
-Hoje está vazia de propósito: até a Semana 4 (01/11) tudo roda localmente e nenhum recurso de nuvem é criado.
-Qualquer recurso novo no GCP exige ADR (no repositório `habilita-docs`) ou aprovação do Tech Lead.
+Hoje está focada nos emuladores locais (`infra/emulators`): até a Semana 4 (01/11) tudo roda localmente no Docker Compose e nenhum recurso de nuvem é criado.
+Qualquer recurso novo em nuvem exige ADR aprovada (no repositório `habilita-docs`) ou aprovação do Tech Lead. Não usamos recursos pagos nem cartão de crédito.
