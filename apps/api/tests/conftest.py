@@ -11,6 +11,14 @@ from fastapi.testclient import TestClient
 
 from habilita.main import app
 
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line(
+        "markers",
+        "integration: testes de integração que dependem de contêineres ou serviços externos",
+    )
+
+
 # -----------------------------------------------------------------------------
 # Identificadores canônicos alinhados ao Seed determinístico (seed/README.md)
 # -----------------------------------------------------------------------------
