@@ -114,8 +114,11 @@ Os dados determinísticos fornecem base direta para os seguintes casos de teste 
 | **T-ISO-03** | Tentativa de injeção de tenantId no payload | Contratos e trabalhadores vinculados estritamente ao tenant das claims. |
 | **T-ISO-04** | Portaria de A consulta CPF existente apenas em B | CPF de `trb_beta_1` não existe no `indiceCpf` de `tnt_alfa` (retorna `NAO_CADASTRADO`). |
 | **T-ISO-05** | Terceirizada 1 de A tenta acessar trabalhador da Terceirizada 2 | Usuário `uid_terc_alfa_1` vs trabalhador `trb_alfa_y1` (`ter_alfa_2`). |
-| **T-ISO-06** | Acesso direto ao Firestore/Storage sem passar pela API | Regras deny-all bloqueiam tentativas em `tenants/tnt_beta/...`. |
+| **T-ISO-06** | Acesso direto ao Firestore/Storage sem passar pela API | Prova em tempo de execução no emulador (leitura e escrita não autenticadas negadas com 403). |
 | **T-ISO-07** | Gestor de A gera URL assinada para documento de B | Documentos sob prefixo estrito `tenants/tnt_beta/...`. |
+| **T-ISO-08** | Requisição a rotas protegidas sem token (esperado 401 Problem Details) | Proteção global de autenticação em rotas fechadas. |
+| **T-ISO-09** | Papel inadequado/RBAC (esperado 403 Problem Details) | Porteiro criando contrato ou Terceirizada aprovando documento. |
+| **T-ISO-10** | IDs parecidos ou colidentes entre tenants (esperado 404) | Busca isolada por caminho `tenants/{tenantId}/...` impede match parcial. |
 | **T-SEM-01** | Todos documentos VALIDO → Verde | `trb_alfa_1` em `ctr_alfa_1`. |
 | **T-SEM-02** | Documentos VALIDO e A_VENCER → Amarelo | `trb_alfa_2` em `ctr_alfa_1`. |
 | **T-SEM-04** | Documento VENCIDO → Vermelho | `trb_alfa_3` em `ctr_alfa_1`. |
