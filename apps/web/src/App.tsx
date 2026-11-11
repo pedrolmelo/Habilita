@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { FormField } from './components/FormField'
 
 // Os três estados que o bloco de saúde pode ter.
 // Estado "vazio" não se aplica aqui: a resposta de /healthz nunca é uma lista.
@@ -57,11 +58,52 @@ function HealthBlock() {
   )
 }
 
+function LoginFormPreview() {
+  return (
+    <section aria-labelledby="login-title">
+      <h2 id="login-title">Acesso ao Habilita</h2>
+
+      <p>Informe suas credenciais para acessar a plataforma.</p>
+
+      <form onSubmit={(event) => event.preventDefault()}>
+        <FormField
+          id="login-email"
+          label="E-mail"
+          name="email"
+          type="email"
+          placeholder="Digite seu e-mail"
+          autoComplete="email"
+          required
+        />
+
+        <FormField
+          id="login-password"
+          label="Senha"
+          name="password"
+          type="password"
+          placeholder="Digite sua senha"
+          autoComplete="current-password"
+          required
+        />
+
+        <button type="submit" disabled>
+          Entrar (em desenvolvimento)
+        </button>
+      </form>
+
+      <p>Prévia dos campos acessíveis. A autenticação será integrada na FE-11.</p>
+    </section>
+  )
+}
+
 export default function App() {
   return (
     <main>
       <h1>Habilita</h1>
+
       <HealthBlock />
+
+      <LoginFormPreview />
     </main>
   )
 }
