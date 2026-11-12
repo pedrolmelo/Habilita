@@ -5,12 +5,25 @@ Empresas que contratam terceirizados controlam documentos por trabalhador e cont
 
 ## Links
 
-- Site da documentação: https://osamuelleite.github.io/habilita-docs/
-- Repositório da documentação (ADRs, contrato OpenAPI): https://github.com/osamuelleite/habilita-docs
+- Site da documentação: https://projeto-habilita.github.io/habilita-docs/
+- Repositório da documentação (ADRs, contrato OpenAPI, critérios de aceite): https://github.com/projeto-habilita/habilita-docs
+- Os dois repositórios ficam na organização [`projeto-habilita`](https://github.com/projeto-habilita). A `main` de ambos é protegida: merge só por PR com **2 aprovações** e check obrigatório verde (`ci-ok` aqui, `build` nos docs).
 
 ## Estado atual
 
-**Esqueleto do Checkpoint 1 (Fundação).** Ainda não há código de aplicação: só a estrutura de pastas, regras de contribuição e verificações automáticas de segurança.
+**Fundação concluída (Checkpoint 1) · núcleo funcional em revisão (Checkpoint 2) · próximo gate: Checkpoint 3 (15/11/2026).**
+
+| Parte | Situação na `main` |
+|---|---|
+| Ambiente local | `docker compose up --build` sobe API, web e emuladores de Auth, Firestore e Storage, sem `.env` |
+| API (FastAPI) | `GET /healthz`. As rotas das jornadas 1 a 3 (contratos e matriz, trabalhadores e documentos, revisão) estão em desenvolvimento em PR |
+| Web (React + Vite) | Bloco de saúde que consulta a API pelo proxy `/api` |
+| Seed | 2 tenants, usuários com custom claims e dados de demonstração; reproduzível e idempotente (checksum conferido no CI) |
+| Segurança | Security Rules **deny-all** no Firestore e no Storage; testes de isolamento de tenant (T-ISO) rodando no CI |
+| CI | Segredos, higiene, qualidade da API, do seed e do web, build, Dockerfiles, smoke do compose e testes (`api-testes`), consolidados no `ci-ok` |
+| Nuvem (a partir da S5) | **Plano Custo Zero** do monitor ([ADR 0010](https://projeto-habilita.github.io/habilita-docs/arquitetura/adr/0010-plano-custo-zero/)): Firebase Spark (Hosting, Auth, Firestore), API no Render, arquivos no Supabase Storage, job diário no GitHub Actions. Gasto: US$ 0,00, sem cartão em nenhum serviço |
+
+O que cada gate exige e o que já foi entregue: [documentação](https://projeto-habilita.github.io/habilita-docs/).
 
 ## Estrutura de pastas
 
@@ -123,12 +136,12 @@ O repositório possui pipeline automatizado no GitHub Actions executado a cada P
 
 ## Como contribuir
 
-Resumo (detalhes em [Como contribuir](https://osamuelleite.github.io/habilita-docs/engenharia/contribuir/)):
+Resumo (detalhes em [Como contribuir](https://projeto-habilita.github.io/habilita-docs/engenharia/contribuir/)):
 
 1. Usamos **GitHub Flow**: a `main` está sempre implantável e protegida. Ninguém faz push direto nela.
 2. Cada história vira uma branch curta: `<tipo>/hab-<NN>-<descricao-curta>`, com `tipo` = `feat`, `fix`, `docs`, `test`, `chore` ou `refactor`. Exemplo: `feat/hab-03-rejeitar-documento`.
 3. Commits em **Conventional Commits**, em inglês, até 72 caracteres no resumo. Escopos: `web`, `api`, `dominio`, `infra`, `docs`, `seed`. Exemplo: `feat(api): reject document without reason`.
-4. Um **Pull Request** por história (ideal até ~400 linhas), título no padrão de commit, 1 aprovação de outra pessoa, CI verde e merge por squash.
+4. Um **Pull Request** por história (ideal até ~400 linhas), título no padrão de commit, **2 aprovações** de outras pessoas (incluindo um dono do `CODEOWNERS`), `ci-ok` verde e merge por squash.
 5. Preencha o checklist da Definition of Done no modelo de PR.
 
 ## Segurança

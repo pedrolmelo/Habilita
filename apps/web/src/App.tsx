@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ErrorState } from './components/ErrorState'
+import { FormField } from './components/FormField'
 
 type HealthState =
   { kind: 'loading' } | { kind: 'success'; status: string } | { kind: 'error'; message: string }
@@ -22,12 +22,14 @@ function HealthBlock() {
 
     async function verificarAPI(): Promise<void> {
       try {
-        const response = await fetch('/api/healthz', {
-          signal: controller.signal,
-        })
-
-        if (controller.signal.aborted) return
-
+        // Se VITE_API_URL estiver definida (produção/Render), consome diretamente a API.
+        // Se vazia ou não definida (ambiente local), mantém a chamada relativa '/api'
+        // que passa pelo proxy do Vite e chega em GET /healthz da API.
+        const apiBaseUrl = import.meta.env.VITE_API_URL
+          ? import.meta.env.VITE_API_URL.replace(/\/+$/, '')
+          : ''
+        const url = apiBaseUrl ? `${apiBaseUrl}/healthz` : '/api/healthz'
+        const response = await fetch(url, { signal: controller.signal })
         if (!response.ok) {
           setState({
             kind: 'error',
@@ -89,11 +91,52 @@ function HealthBlock() {
   )
 }
 
+function LoginFormPreview() {
+  return (
+    <section aria-labelledby="login-title">
+      <h2 id="login-title">Acesso ao Habilita</h2>
+
+      <p>Informe suas credenciais para acessar a plataforma.</p>
+
+      <form onSubmit={(event) => event.preventDefault()}>
+        <FormField
+          id="login-email"
+          label="E-mail"
+          name="email"
+          type="email"
+          placeholder="Digite seu e-mail"
+          autoComplete="email"
+          required
+        />
+
+        <FormField
+          id="login-password"
+          label="Senha"
+          name="password"
+          type="password"
+          placeholder="Digite sua senha"
+          autoComplete="current-password"
+          required
+        />
+
+        <button type="submit" disabled>
+          Entrar (em desenvolvimento)
+        </button>
+      </form>
+
+      <p>Prévia dos campos acessíveis. A autenticação será integrada na FE-11.</p>
+    </section>
+  )
+}
+
 export default function App() {
   return (
     <main>
       <h1>Habilita</h1>
+
       <HealthBlock />
+
+      <LoginFormPreview />
     </main>
   )
 }
