@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { LoadingState } from './components/LoadingState'
+import { FormField } from './components/FormField'
+
 // Os três estados que o bloco de saúde pode ter.
 // Estado "vazio" não se aplica aqui: a resposta de /healthz nunca é uma lista.
 // Nas telas com listas (próximas histórias), lembre de tratar o estado vazio também.
@@ -21,8 +22,14 @@ function HealthBlock() {
 
     async function check(): Promise<void> {
       try {
-        // /api/healthz passa pelo proxy do Vite e chega em GET /healthz da API.
-        const response = await fetch('/api/healthz', { signal: controller.signal })
+        // Se VITE_API_URL estiver definida (produção/Render), consome diretamente a API.
+        // Se vazia ou não definida (ambiente local), mantém a chamada relativa '/api'
+        // que passa pelo proxy do Vite e chega em GET /healthz da API.
+        const apiBaseUrl = import.meta.env.VITE_API_URL
+          ? import.meta.env.VITE_API_URL.replace(/\/+$/, '')
+          : ''
+        const url = apiBaseUrl ? `${apiBaseUrl}/healthz` : '/api/healthz'
+        const response = await fetch(url, { signal: controller.signal })
         if (!response.ok) {
           setState({ kind: 'error', message: `A API respondeu com HTTP ${response.status}` })
           return
@@ -57,11 +64,52 @@ function HealthBlock() {
   )
 }
 
+function LoginFormPreview() {
+  return (
+    <section aria-labelledby="login-title">
+      <h2 id="login-title">Acesso ao Habilita</h2>
+
+      <p>Informe suas credenciais para acessar a plataforma.</p>
+
+      <form onSubmit={(event) => event.preventDefault()}>
+        <FormField
+          id="login-email"
+          label="E-mail"
+          name="email"
+          type="email"
+          placeholder="Digite seu e-mail"
+          autoComplete="email"
+          required
+        />
+
+        <FormField
+          id="login-password"
+          label="Senha"
+          name="password"
+          type="password"
+          placeholder="Digite sua senha"
+          autoComplete="current-password"
+          required
+        />
+
+        <button type="submit" disabled>
+          Entrar (em desenvolvimento)
+        </button>
+      </form>
+
+      <p>Prévia dos campos acessíveis. A autenticação será integrada na FE-11.</p>
+    </section>
+  )
+}
+
 export default function App() {
   return (
     <main>
       <h1>Habilita</h1>
+
       <HealthBlock />
+
+      <LoginFormPreview />
     </main>
   )
 }

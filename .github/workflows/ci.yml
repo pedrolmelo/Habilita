@@ -295,30 +295,79 @@ jobs:
           fi
           echo "Idempotência confirmada com sucesso: checksum $checksum1 mantido intacto."
 
-      - name: Validar regra deny-all no emulador do Firestore
+      - name: Validar regras deny-all nos emuladores do Firestore e Storage
         run: |
           set -euo pipefail
 
-          echo "==> Enviando escrita não autenticada na API REST do Firestore..."
-          http_code=$(curl -s -o /tmp/firestore_response.json -w "%{http_code}" -X POST \
+          echo "==> 1. Validando escrita não autenticada no Firestore..."
+          http_code_fs_write=$(curl -s -o /tmp/fs_write_response.json -w "%{http_code}" -X POST \
             -H "Content-Type: application/json" \
             -d '{"fields": {"probe": {"stringValue": "ci-deny-all"}}}' \
             "http://127.0.0.1:8080/v1/projects/demo-habilita/databases/(default)/documents/probe_smoke")
 
-          echo "Código HTTP retornado: $http_code"
-          if [ "$http_code" != "403" ]; then
-            echo "ERRO: Esperado HTTP 403 (PERMISSION_DENIED), obtido HTTP $http_code"
-            cat /tmp/firestore_response.json
+          echo "Código HTTP retornado (Firestore escrita): $http_code_fs_write"
+          if [ "$http_code_fs_write" != "403" ]; then
+            echo "ERRO: Esperado HTTP 403 (PERMISSION_DENIED) na escrita do Firestore, obtido $http_code_fs_write"
+            cat /tmp/fs_write_response.json
             exit 1
           fi
-
-          grep -q "PERMISSION_DENIED" /tmp/firestore_response.json || {
-            echo "ERRO: O corpo da resposta não contém 'PERMISSION_DENIED':"
-            cat /tmp/firestore_response.json
+          grep -q "PERMISSION_DENIED" /tmp/fs_write_response.json || {
+            echo "ERRO: O corpo não contém 'PERMISSION_DENIED':"
+            cat /tmp/fs_write_response.json
             exit 1
           }
 
-          echo "Regra deny-all validada com sucesso: escrita rejeitada com 403 PERMISSION_DENIED."
+          echo "==> 2. Validando leitura não autenticada no Firestore..."
+          http_code_fs_read=$(curl -s -o /tmp/fs_read_response.json -w "%{http_code}" -X GET \
+            "http://127.0.0.1:8080/v1/projects/demo-habilita/databases/(default)/documents/probe_smoke")
+
+          echo "Código HTTP retornado (Firestore leitura): $http_code_fs_read"
+          if [ "$http_code_fs_read" != "403" ]; then
+            echo "ERRO: Esperado HTTP 403 (PERMISSION_DENIED) na leitura do Firestore, obtido $http_code_fs_read"
+            cat /tmp/fs_read_response.json
+            exit 1
+          fi
+          grep -q "PERMISSION_DENIED" /tmp/fs_read_response.json || {
+            echo "ERRO: O corpo não contém 'PERMISSION_DENIED':"
+            cat /tmp/fs_read_response.json
+            exit 1
+          }
+
+          echo "==> 3. Validando escrita não autenticada no Storage..."
+          http_code_st_write=$(curl -s -o /tmp/st_write_response.json -w "%{http_code}" -X POST \
+            -H "Content-Type: text/plain" \
+            -d "conteudo_teste" \
+            "http://127.0.0.1:9199/v0/b/demo-habilita.appspot.com/o?name=probe_smoke.txt")
+
+          echo "Código HTTP retornado (Storage escrita): $http_code_st_write"
+          if [ "$http_code_st_write" != "403" ]; then
+            echo "ERRO: Esperado HTTP 403 na escrita do Storage, obtido $http_code_st_write"
+            cat /tmp/st_write_response.json
+            exit 1
+          fi
+          grep -iq "permission" /tmp/st_write_response.json || {
+            echo "ERRO: Resposta do Storage não indica negação de permissão:"
+            cat /tmp/st_write_response.json
+            exit 1
+          }
+
+          echo "==> 4. Validando leitura não autenticada no Storage..."
+          http_code_st_read=$(curl -s -o /tmp/st_read_response.json -w "%{http_code}" -X GET \
+            "http://127.0.0.1:9199/v0/b/demo-habilita.appspot.com/o/probe_smoke.txt")
+
+          echo "Código HTTP retornado (Storage leitura): $http_code_st_read"
+          if [ "$http_code_st_read" != "403" ]; then
+            echo "ERRO: Esperado HTTP 403 na leitura do Storage, obtido $http_code_st_read"
+            cat /tmp/st_read_response.json
+            exit 1
+          fi
+          grep -iq "permission" /tmp/st_read_response.json || {
+            echo "ERRO: Resposta do Storage não indica negação de permissão:"
+            cat /tmp/st_read_response.json
+            exit 1
+          }
+
+          echo "Regras deny-all do Firestore e Storage validadas com sucesso no emulador (leitura e escrita bloqueadas)."
 
       - name: Exibir diagnóstico em caso de falha
         if: failure()

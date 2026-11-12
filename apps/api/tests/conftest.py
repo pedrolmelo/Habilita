@@ -132,3 +132,38 @@ def headers_porteiro_beta() -> dict[str, str]:
         papel="porteiro",
         uid="uid_porteiro_beta",
     )
+
+
+@pytest.fixture
+def headers_analista_sst_alfa() -> dict[str, str]:
+    """Cabeçalhos autenticados para Analista SST do Tenant Alfa (ADR 0002)."""
+    return criar_headers_autenticados(
+        tenant_id=TNT_ALFA,
+        papel="analista_sst",
+        uid="uid_analista_sst_alfa",
+    )
+
+
+@pytest.fixture
+def headers_admin_contratante_alfa() -> dict[str, str]:
+    """Cabeçalhos autenticados para Admin Contratante do Tenant Alfa (ADR 0002)."""
+    return criar_headers_autenticados(
+        tenant_id=TNT_ALFA,
+        papel="admin_contratante",
+        uid="uid_admin_contratante_alfa",
+    )
+
+
+@pytest.fixture
+def headers_token_invalido() -> dict[str, str]:
+    """Cabeçalhos com token malformado ou inválido."""
+    return {"Authorization": "Bearer token-invalido-ou-corrompido"}
+
+
+@pytest.fixture
+def headers_token_expirado() -> dict[str, str]:
+    """Cabeçalhos com token simulando expiração."""
+    return {
+        "Authorization": "Bearer mock-token-expirado:tnt_alfa:gestor",
+        "X-Simulated-Expired": "true",
+    }

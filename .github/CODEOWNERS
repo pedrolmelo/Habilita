@@ -1,19 +1,24 @@
 # CODEOWNERS: define quem é dono (revisor padrão) de cada parte do repositório.
-# Atenção: a revisão pelo dono só é OBRIGATÓRIA se a regra
-# "Require review from Code Owners" estiver ativa na proteção da branch no GitHub.
+# A revisão pelo dono é OBRIGATÓRIA porque a proteção da main tem "Require review from Code Owners"
+# (ver https://projeto-habilita.github.io/habilita-docs/engenharia/configuracao-github/).
 # A ÚLTIMA regra que casar com o arquivo é a que vale.
+# Regra da equipe: todo caminho tem PELO MENOS 2 donos. Se o autor do PR for o único dono,
+# o PR nunca recebe a revisão do dono e fica travado.
 #
 # Papéis: Tech Lead @osamuelleite | Backend @Gustavormq | Frontend @ArthurFeitosa05
 #         DevOps @pedrolmelo | QA @CauaRVeloso | PO @Lelafeta
 
-# Padrão: Tech Lead
-*                       @osamuelleite
+# Padrão: Tech Lead + DevOps
+*                       @osamuelleite @pedrolmelo
 
 # Frontend
-/apps/web/              @ArthurFeitosa05
+/apps/web/              @ArthurFeitosa05 @osamuelleite
 
 # API
 /apps/api/              @Gustavormq @osamuelleite
+
+# Testes da API (QA é dono da estratégia de testes)
+/apps/api/tests/        @CauaRVeloso @Gustavormq @osamuelleite
 
 # Seed (dados de demonstração)
 /seed/                  @Gustavormq @pedrolmelo
@@ -27,6 +32,8 @@
 /AGENTS.md              @pedrolmelo @osamuelleite
 /CLAUDE.md              @pedrolmelo @osamuelleite
 /.hadolint.yaml         @pedrolmelo @osamuelleite
+/.gitleaks.toml         @osamuelleite @pedrolmelo
+/.claude/               @osamuelleite @pedrolmelo
 
 # Emuladores do Firebase e regras (DevOps + Tech Lead)
 /firebase.json          @pedrolmelo @osamuelleite
@@ -35,8 +42,8 @@
 /firestore.indexes.json @pedrolmelo @osamuelleite
 /.firebaserc            @pedrolmelo @osamuelleite
 
-# Imagem dos emuladores e Dockerfiles das aplicações (DevOps)
-/infra/emulators/       @pedrolmelo
-/apps/api/Dockerfile    @pedrolmelo
-/apps/web/Dockerfile    @pedrolmelo
-/seed/Dockerfile        @pedrolmelo
+# Imagem dos emuladores e Dockerfiles das aplicações (DevOps + Tech Lead)
+/infra/emulators/       @pedrolmelo @osamuelleite
+/apps/api/Dockerfile    @pedrolmelo @osamuelleite
+/apps/web/Dockerfile    @pedrolmelo @osamuelleite
+/seed/Dockerfile        @pedrolmelo @osamuelleite

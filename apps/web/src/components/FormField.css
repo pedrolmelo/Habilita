@@ -1,0 +1,44 @@
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.form-field__label {
+  color: #142b49;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-field__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #142b49;
+  font: inherit;
+}
+
+.form-field__input:focus-visible {
+  outline: 3px solid #2463eb;
+  outline-offset: 2px;
+}
+
+.form-field__input[aria-invalid='true'] {
+  border-color: #b43b3b;
+}
+
+.form-field__hint {
+  color: #475569;
+  font-size: 13px;
+  margin: 0;
+}
+
+.form-field__error {
+  color: #b43b3b;
+  font-size: 13px;
+  margin: 0;
+}
