@@ -1,6 +1,6 @@
 """Ponto de entrada de produção: `python -m habilita`.
 
-Lê a porta de PORT (padrão 8000) e escuta em 0.0.0.0, como o Cloud Run exige.
+Lê a porta de PORT (padrão 8000) e escuta em 0.0.0.0, como no Render e execução local.
 Não precisa de shell para expandir variáveis (sem `sh -c` no contêiner).
 """
 
@@ -13,7 +13,7 @@ def main() -> None:
     settings = get_settings()
     uvicorn.run(
         "habilita.main:app",
-        # 0.0.0.0 é necessário dentro do contêiner; quem limita o acesso é o Docker/Cloud Run.
+        # 0.0.0.0 é necessário no contêiner; quem limita o acesso é o Docker (no Render/local).
         host="0.0.0.0",  # noqa: S104
         port=settings.port,
         log_level=settings.log_level,

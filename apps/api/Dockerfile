@@ -1,6 +1,6 @@
 # Imagem da API do Habilita. Dois alvos (`--target`):
 #   dev  -> recarrega sozinha ao editar o código (usada no docker compose)
-#   prod -> enxuta, sem ferramentas de desenvolvimento (será usada no Cloud Run)
+#   prod -> enxuta, sem ferramentas de desenvolvimento (será usada no Render e execução local)
 # Versões fixadas por tag exata + digest (sha256) para o build ser reproduzível.
 
 # uv 0.13.1 (gerenciador de dependências Python)
@@ -13,7 +13,7 @@ FROM ghcr.io/astral-sh/uv:0.13.1@sha256:4a1f3666816dafadd20ceb71eac9a7d56d7ef302
 FROM python:3.12.15-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 AS base
 
 # - sem .pyc (menos lixo) e logs sem buffer (aparecem na hora no `docker logs`)
-# - PORT: porta da API (o Cloud Run também injeta PORT); padrão 8000
+# - PORT: porta da API (Render e execução local usam PORT); padrão 8000
 # - /opt/venv: ambiente virtual com as dependências, fora de /app para o volume não sobrescrevê-lo
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
